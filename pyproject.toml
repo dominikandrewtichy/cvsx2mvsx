@@ -1,0 +1,7 @@
+[project]
+name = "cvsx2mvsx"
+version = "0.0.0"
+description = "Library for converting the CVSX file format into the MVSX file format"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
