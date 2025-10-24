@@ -1,0 +1,53 @@
+from typing import Literal
+
+from pydantic import BaseModel, field_validator
+
+
+class CVSXFileInfo(BaseModel):
+    type: Literal[
+        "volume",
+        "lattice",
+        "mesh",
+        "geometric-segmentation",
+        "annotations",
+        "metadata",
+        "query",
+    ]
+
+
+class VolumeFileInfo(CVSXFileInfo):
+    channelId: str
+    timeframeIndex: int
+
+    # sometimes it gets saved in the index.json file as an integer
+    @field_validator("channelId", mode="before")
+    @classmethod
+    def convert_channel_id_to_string(cls, v):
+        return str(v)
+
+
+class SegmentationFileInfo(CVSXFileInfo):
+    segmentationId: str
+    timeframeIndex: int
+
+
+class MeshSegmentationFilesInfo(SegmentationFileInfo):
+    segmentsFilenames: list[str]
+
+
+class LatticeSegmentationFileInfo(SegmentationFileInfo):
+    pass
+
+
+class GeometricSegmentationFileInfo(SegmentationFileInfo):
+    pass
+
+
+class CVSXIndex(BaseModel):
+    query: str
+    metadata: str
+    annotations: str
+    volumes: dict[str, VolumeFileInfo]
+    meshSegmentations: list[MeshSegmentationFilesInfo] | None = None
+    latticeSegmentations: dict[str, LatticeSegmentationFileInfo] | None = None
+    geometricSegmentations: dict[str, GeometricSegmentationFileInfo] | None = None

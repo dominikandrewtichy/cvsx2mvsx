@@ -4,4 +4,7 @@ version = "0.0.0"
 description = "Library for converting the CVSX file format into the MVSX file format"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "molviewspec>=1.7.0",
+    "pydantic>=2.12.3",
+]

@@ -207,4 +207,4 @@ marimo/_lsp/
 __marimo__/
 
 # examples
-src/examples/
+data/
