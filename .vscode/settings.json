@@ -1,0 +1,42 @@
+{
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.ruff_cache": true,
+    },
+    "files.associations": {
+        "**/**/*.mvsj": "json",
+    },
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit",
+            "source.removeUnusedImports": "never",
+            "source.unusedImports": "never",
+        },
+    },
+    // Themes
+    "workbench.preferredDarkColorTheme": "Dracula Theme",
+    "workbench.preferredLightColorTheme": "Solarized Light",
+    "peacock.color": "#7d4222",
+    "workbench.colorCustomizations": {
+        "activityBar.activeBackground": "#a5572d",
+        "activityBar.background": "#a5572d",
+        "activityBar.foreground": "#e7e7e7",
+        "activityBar.inactiveForeground": "#e7e7e799",
+        "activityBarBadge.background": "#37c86a",
+        "activityBarBadge.foreground": "#15202b",
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#a5572d",
+        "statusBar.background": "#7d4222",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#a5572d",
+        "statusBarItem.remoteBackground": "#7d4222",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#7d4222",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#7d422299",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    }
+}
