@@ -1,13 +1,14 @@
 from typing import Literal
 
-from pydantic import BaseModel
-from src.utils.volseg_models import EntryId
+from pydantic import BaseModel, field_validator
+
+from src.models.cvsx.cvsx_common import EntryId
 
 
 class SamplingBox(BaseModel):
-    origin: tuple[int, int, int]
+    grid_dimensions: tuple[int, int, int]
+    origin: tuple[float, float, float]
     voxel_size: tuple[float, float, float]
-    grid_dimensions: list[int, int, int]
 
 
 class TimeTransformation(BaseModel):
@@ -23,9 +24,9 @@ class DownsamplingLevelInfo(BaseModel):
 class SamplingInfo(BaseModel):
     spatial_downsampling_levels: list[DownsamplingLevelInfo]
     boxes: dict[int, SamplingBox]
-    time_transformations: list[TimeTransformation] | None
+    time_transformations: list[TimeTransformation] | None = None
     source_axes_units: dict[str, str]
-    original_axis_order: list[int, int, int]
+    original_axis_order: tuple[int, int, int]
 
 
 class TimeInfo(BaseModel):
@@ -49,7 +50,7 @@ class GeometricSegmentationSetsMetadata(BaseModel):
 class MeshMetadata(BaseModel):
     num_vertices: int
     num_triangles: int
-    num_normals: int | None
+    num_normals: int | None = None
 
 
 class MeshListMetadata(BaseModel):
@@ -91,16 +92,21 @@ class VolumesMetadata(BaseModel):
     time_info: TimeInfo
     volume_sampling_info: VolumeSamplingInfo
 
+    @field_validator("channel_ids", mode="before")
+    @classmethod
+    def convert_channel_ids_to_string(cls, v):
+        return [str(x) for x in v]
+
 
 class EntryMetadata(BaseModel):
-    description: str | None
-    url: str | None
+    description: str | None = None
+    url: str | None = None
 
 
 class CVSXMetadata(BaseModel):
     entry_id: EntryId
     volumes: VolumesMetadata
-    segmentation_lattices: SegmentationLatticesMetadata | None
-    segmentation_meshes: MeshSegmentationSetsMetadata | None
-    geometric_segmentation: GeometricSegmentationSetsMetadata | None
-    entry_metadata: EntryMetadata | None
+    segmentation_lattices: SegmentationLatticesMetadata | None = None
+    segmentation_meshes: MeshSegmentationSetsMetadata | None = None
+    geometric_segmentation: GeometricSegmentationSetsMetadata | None = None
+    entry_metadata: EntryMetadata | None = None

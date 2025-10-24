@@ -2,13 +2,15 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+SegmentationKind = Literal["mesh", "lattice", "geometric-segmentation"]
+
 
 class CVSXQuery(BaseModel):
-    segmentation_kind: Literal["mesh", "lattice", "geometric-segmentation"] | None
     entry_id: str
     source_db: str
-    time: int | None
-    channel_id: str | None
-    segmentation_id: str | None
-    detail_lvl: int | None
-    max_points: int | None
+    segmentation_kind: SegmentationKind | None = None
+    time: int | None = None
+    channel_id: str | None = None
+    segmentation_id: str | None = None
+    detail_lvl: int | None = None
+    max_points: int | None = None

@@ -19,7 +19,6 @@ class VolumeFileInfo(CVSXFileInfo):
     channelId: str
     timeframeIndex: int
 
-    # sometimes it gets saved in the index.json file as an integer
     @field_validator("channelId", mode="before")
     @classmethod
     def convert_channel_id_to_string(cls, v):

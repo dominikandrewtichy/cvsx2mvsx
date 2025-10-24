@@ -1,7 +1,8 @@
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel
-from src.utils.volseg_models import EntryId
+
+from src.models.cvsx.cvsx_common import EntryId
 
 
 class ChannelAnnotation(BaseModel):
