@@ -8,7 +8,8 @@ class MVSXColor(BaseModel):
 
 
 class MVSXVolume(BaseModel):
-    uri: str
+    source_filepath: str
+    destination_filepath: str
     format: Literal["bcif"]
     channel_id: str
     timeframe_index: int

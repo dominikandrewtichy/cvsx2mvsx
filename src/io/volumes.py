@@ -1,5 +1,6 @@
-from models.mvsx.mvsx_volume import MVSXVolume, MVSXVolumeFilter
 from molviewspec.builder import Root
+
+from models.mvsx.mvsx_volume import MVSXVolume, MVSXVolumeFilter
 
 
 def mvsj_add_volume(
@@ -19,7 +20,7 @@ def mvsj_add_volumes(
     builder: Root,
     volume: MVSXVolume,
 ):
-    download = builder.download(url=volume.uri)
+    download = builder.download(url=volume.source_filepath)
     parsed = download.parse(format=volume.format)
     volume_data = parsed.volume(channel_id=volume.channel_id)
     representation = volume_data.representation(
