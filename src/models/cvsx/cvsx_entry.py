@@ -7,6 +7,7 @@ from .cvsx_query import CVSXQuery
 
 
 class CVSXEntry(BaseModel):
+    filepath: str
     index: CVSXIndex
     annotations: CVSXAnnotations
     metadata: CVSXMetadata
