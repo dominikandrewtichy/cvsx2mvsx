@@ -3,8 +3,8 @@ from pathlib import Path
 from molviewspec import create_builder
 from molviewspec.nodes import GlobalMetadata, States
 
-from src.io.cvsx_reader.loader import load_cvsx_entry
-from src.io.mvsx_writer.volumes import mvsj_add_volume
+from src.io.cvsx_loader import load_cvsx_entry
+from src.io.mvsj_builder import mvsj_add_volume
 from src.models.intermediary.inter import InterEntryInfo
 from src.models.mvsx.mvsx_entry import MVSXEntry, MVSXSnapshot
 from src.models.mvsx.mvsx_volume import MVSXVolume
