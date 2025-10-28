@@ -1,6 +1,5 @@
 import json
 import os
-from pathlib import Path
 from typing import Type, TypeVar
 from zipfile import BadZipFile, ZipFile
 
@@ -70,21 +69,8 @@ def check_all_files_in_index(zip_path: str, cvsx_index: CVSXIndex) -> None:
             expected_files.update(mesh_info.segmentsFilenames)
 
     for file in expected_files:
-        if not is_path_safe(file):
-            raise ValueError(f"Unsafe path detected in index: '{file}'")
         if file not in zip_contents:
             raise FileNotFoundError("File missing from ZIP archive: '{f}'")
-
-
-def is_path_safe(base_directory: str, untrusted_path: str) -> bool:
-    base = Path(base_directory).resolve()
-
-    try:
-        target = (base / untrusted_path).resolve()
-        target.relative_to(base)
-        return True
-    except (ValueError, OSError):
-        return False
 
 
 def load_model_from_zip(zip_path: str, inner_path: str, model_class: Type[T]) -> T:
