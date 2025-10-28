@@ -1,49 +1,52 @@
 from pydantic import BaseModel
 
 from src.models.cvsx.cvsx_entry import CVSXEntry
-from src.models.cvsx.cvsx_index import (
-    GeometricSegmentationFileInfo,
-    LatticeSegmentationFileInfo,
-    MeshSegmentationFilesInfo,
-)
 
 
-class InterVolume(BaseModel):
+class InterFileInfo(BaseModel):
     filepath: str
-    channelId: str
-    timeframeIndex: int
+    timeframe_index: int
 
 
-class InterTimeframeSegmentations(BaseModel):
-    mesh: list[MeshSegmentationFilesInfo] = []
-    lattice: list[LatticeSegmentationFileInfo] = []
-    geometric: list[GeometricSegmentationFileInfo] = []
+class InterVolumeFileInfo(InterFileInfo):
+    channel_id: str
 
 
-class InterTimeframe(BaseModel):
-    index: int
-    volumes: list[InterVolume] = []
-    segmentations: InterTimeframeSegmentations = InterTimeframeSegmentations()
+class InterSegmentationFileInfo(InterFileInfo):
+    segmentation_id: str
 
 
-class InterTimeframeGroupedIndex(BaseModel):
-    timeframes: list[InterTimeframe]
+class InterSegmentations(BaseModel):
+    mesh: list[InterSegmentationFileInfo] = []
+    lattice: list[InterSegmentationFileInfo] = []
+    geometric: list[InterSegmentationFileInfo] = []
+
+
+class InterTimeframeInfo(BaseModel):
+    timeframe_index: int
+    volumes: list[InterVolumeFileInfo] = []
+    segmentations: InterSegmentations = InterSegmentations()
+
+
+class InterEntryInfo(BaseModel):
+    cvsx_entry: CVSXEntry
+    timeframes: list[InterTimeframeInfo]
 
     @classmethod
-    def from_cvsx_index(cls, entry: CVSXEntry) -> "InterTimeframeGroupedIndex":
-        timeframe_map: dict[int, InterTimeframe] = {}
+    def from_cvsx_index(cls, entry: CVSXEntry) -> "InterEntryInfo":
+        timeframe_map: dict[int, InterTimeframeInfo] = {}
 
-        def _get_or_create(tf_index: int) -> InterTimeframe:
+        def _get_or_create(tf_index: int) -> InterTimeframeInfo:
             if tf_index not in timeframe_map:
-                timeframe_map[tf_index] = InterTimeframe(index=tf_index)
+                timeframe_map[tf_index] = InterTimeframeInfo(timeframe_index=tf_index)
             return timeframe_map[tf_index]
 
         index = entry.index
 
         for filepath, file_info in index.volumes.items():
-            tf = _get_or_create(file_info.timeframeIndex)
-            tf.volumes.append(
-                InterVolume(
+            timeframe = _get_or_create(file_info.timeframeIndex)
+            timeframe.volumes.append(
+                InterVolumeFileInfo(
                     filepath=filepath,
                     channelId=file_info.channelId,
                     timeframeIndex=file_info.timeframeIndex,
@@ -51,17 +54,27 @@ class InterTimeframeGroupedIndex(BaseModel):
             )
         if index.meshSegmentations:
             for mesh_info in index.meshSegmentations:
-                tf = _get_or_create(mesh_info.timeframeIndex)
-                tf.segmentations.mesh.append(mesh_info)
+                timeframe = _get_or_create(mesh_info.timeframeIndex)
+                for mesh_filename in mesh_info.segmentsFilenames:
+                    timeframe.segmentations.mesh.append(
+                        InterSegmentationFileInfo(
+                            filepath=mesh_filename,
+                            timeframe_index=mesh_info.timeframeIndex,
+                            segmentation_id=mesh_info.segmentationId,
+                        )
+                    )
         if index.latticeSegmentations:
             for file_info in index.latticeSegmentations.values():
-                tf = _get_or_create(file_info.timeframeIndex)
-                tf.segmentations.lattice.append(file_info)
+                timeframe = _get_or_create(file_info.timeframeIndex)
+                timeframe.segmentations.lattice.append(file_info)
         if index.geometricSegmentations:
             for file_info in index.geometricSegmentations.values():
-                tf = _get_or_create(file_info.timeframeIndex)
-                tf.segmentations.geometric.append(file_info)
+                timeframe = _get_or_create(file_info.timeframeIndex)
+                timeframe.segmentations.geometric.append(file_info)
 
         sorted_timeframes = [timeframe_map[i] for i in sorted(timeframe_map.keys())]
 
-        return cls(timeframes=sorted_timeframes)
+        return cls(
+            cvsx_entry=entry,
+            timeframes=sorted_timeframes,
+        )

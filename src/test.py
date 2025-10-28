@@ -5,7 +5,7 @@ from molviewspec.nodes import GlobalMetadata, States
 
 from src.io.cvsx_reader.loader import load_cvsx_entry
 from src.io.mvsx_writer.volumes import mvsj_add_volume
-from src.models.intermediary.inter import InterTimeframeGroupedIndex
+from src.models.intermediary.inter import InterEntryInfo
 from src.models.mvsx.mvsx_entry import MVSXEntry, MVSXSnapshot
 from src.models.mvsx.mvsx_volume import MVSXVolume
 
@@ -21,8 +21,12 @@ cvsx_filepath = "data/cvsx/zipped/custom-tubhiswt.cvsx"
 # original
 cvsx_entry = load_cvsx_entry(cvsx_filepath)
 
+print(len(cvsx_entry.index.volumes))
+
+exit(0)
+
 # intermediate model
-grouped = InterTimeframeGroupedIndex.from_cvsx_index(cvsx_entry)
+grouped = InterEntryInfo.from_cvsx_index(cvsx_entry)
 
 # final model
 snapshots = []
