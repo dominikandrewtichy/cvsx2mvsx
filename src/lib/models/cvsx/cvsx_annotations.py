@@ -2,7 +2,7 @@ from typing import Any, Literal, Optional
 
 from pydantic import BaseModel
 
-from src.models.cvsx.cvsx_common import EntryId
+from lib.models.cvsx.cvsx_common import EntryId
 
 
 class ChannelAnnotation(BaseModel):

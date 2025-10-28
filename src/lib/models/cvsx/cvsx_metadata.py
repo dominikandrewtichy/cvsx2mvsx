@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
-from src.models.cvsx.cvsx_common import EntryId
+from lib.models.cvsx.cvsx_common import EntryId
 
 
 class SamplingBox(BaseModel):

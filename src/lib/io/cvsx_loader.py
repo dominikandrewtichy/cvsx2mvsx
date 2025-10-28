@@ -5,11 +5,11 @@ from zipfile import BadZipFile, ZipFile
 
 from pydantic import ValidationError
 
-from src.models.cvsx.cvsx_annotations import CVSXAnnotations
-from src.models.cvsx.cvsx_entry import CVSXEntry
-from src.models.cvsx.cvsx_index import CVSXIndex
-from src.models.cvsx.cvsx_metadata import CVSXMetadata
-from src.models.cvsx.cvsx_query import CVSXQuery
+from lib.models.cvsx.cvsx_annotations import CVSXAnnotations
+from lib.models.cvsx.cvsx_entry import CVSXEntry
+from lib.models.cvsx.cvsx_index import CVSXIndex
+from lib.models.cvsx.cvsx_metadata import CVSXMetadata
+from lib.models.cvsx.cvsx_query import CVSXQuery
 
 T = TypeVar("T")
 

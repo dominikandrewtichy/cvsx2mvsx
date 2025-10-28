@@ -1,6 +1,6 @@
 from molviewspec.builder import Root
 
-from src.models.mvsx.mvsx_volume import MVSXVolume
+from src.lib.models.mvsx.mvsx_entry import MVSXVolume
 
 
 def mvsj_add_volume(
