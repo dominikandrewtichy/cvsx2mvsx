@@ -38,7 +38,7 @@ def get_volume_opacity(annotations: CVSXAnnotations, channel_id: str) -> float |
             return annotation.color[3]
 
 
-def convert(entry: InterEntryInfo) -> None:
+def convert_all(entry: InterEntryInfo) -> None:
     snapshots: list[Snapshot] = []
 
     # prepare the zip archive

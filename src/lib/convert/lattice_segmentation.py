@@ -161,11 +161,7 @@ def get_lattice_segment(
     name: str,
 ) -> LatticeSegmentationCIF | None:
     values = lattice_cif.segmentation_block.segmentation_data_3d.values
-
     data_3d_values = np.where(values == segment_id, 1.0, 0.0)
-
-    lattice_cif.filename = name
-    lattice_cif.segmentation_block.segmentation_data_3d.values = data_3d_values
 
     lattice_cif.segmentation_block.volume_data_3d_info.min_sampled = 0.0
     lattice_cif.segmentation_block.volume_data_3d_info.max_sampled = 1.0
@@ -175,6 +171,9 @@ def get_lattice_segment(
     lattice_cif.segmentation_block.volume_data_3d_info.sigma_sampled = float(
         np.std(data_3d_values)
     )
+
+    lattice_cif.filename = name
+    lattice_cif.segmentation_block.segmentation_data_3d.values = data_3d_values
 
     return lattice_cif
 
