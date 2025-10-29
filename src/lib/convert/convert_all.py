@@ -66,6 +66,7 @@ def convert_all(entry: InterEntryInfo) -> None:
         key=key,
         title=title,
         description=description,
+        transition_duration_ms=2000,
     )
     snapshots.append(index_snapshot)
 
@@ -96,12 +97,25 @@ def convert_all(entry: InterEntryInfo) -> None:
                 entry.cvsx_entry.annotations, volume.channel_id
             )
             representation.color(color=color)
-            representation.opacity(opacity=opacity)
+            opacity_node_ref = ""
+            representation.opacity(ref=opacity_node_ref, opacity=opacity)
+
+            # snapshot_builder.animation().interpolate(
+            #     kind="scalar",
+            #     target_ref=opacity_node_ref,
+            #     property="opacity",
+            #     start_ms=0,
+            #     duration_ms=1000,
+            #     start=0.5,
+            #     end=1.0,
+            #     easing="linear",
+            # )
 
         snapshot = snapshot_builder.get_snapshot(
             key=get_timeframe_key(timeframe.timeframe_index),
             title=f"Timeframe: {timeframe.timeframe_index}",
             description=f"[Index](#{get_index_key()})",
+            # transition_duration_ms=2000,
         )
         snapshots.append(snapshot)
 

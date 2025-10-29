@@ -12,9 +12,9 @@ from lib.convert.lattice_segmentation import (
 if not os.path.exists("temp"):
     os.mkdir("temp")
 
-filename = "lattice_emd_1273_msk_3_0"
+filename = "lattice_0_0"
 data = read_bcif_file(
-    zip_path="data/cvsx/zipped/emd-1273.cvsx",
+    zip_path="data/cvsx/zipped/emd-1832.cvsx",
     inner_path=f"{filename}.bcif",
 )
 lattice_model = bcif_to_lattice_segmentation_cif(data, "0")

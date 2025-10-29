@@ -161,29 +161,55 @@ def get_lattice_segment(
     name: str,
 ) -> LatticeSegmentationCIF | None:
     values = lattice_cif.segmentation_block.segmentation_data_3d.values
-    data_3d_values = np.where(values == segment_id, 1.0, 0.0)
+    info = lattice_cif.segmentation_block.volume_data_3d_info
 
-    lattice_cif.segmentation_block.volume_data_3d_info.min_sampled = 0.0
-    lattice_cif.segmentation_block.volume_data_3d_info.max_sampled = 1.0
-    lattice_cif.segmentation_block.volume_data_3d_info.mean_sampled = float(
-        np.mean(data_3d_values)
-    )
-    lattice_cif.segmentation_block.volume_data_3d_info.sigma_sampled = float(
-        np.std(data_3d_values)
+    nx, ny, nz = (
+        info.sample_count_0,
+        info.sample_count_1,
+        info.sample_count_2,
     )
 
+    # 1️⃣ Reshape properly from flat list
+    # CIF’s flat list stores values in z-major (slowest) order, but NumPy’s default reshape assumes x-major.
+    data = np.array(values, dtype=np.float32).reshape((nz, ny, nx))
+    data = np.transpose(data, (2, 1, 0))  # -> (x, y, z)
+
+    # 2️⃣ Convert segment IDs to binary mask
+    data_3d_values = np.where(data == segment_id, 1.0, 0.0)
+
+    # 3️⃣ Pad with one voxel border (background = 0)
+    padded = np.pad(
+        data_3d_values, ((1, 1), (1, 1), (1, 1)), mode="constant", constant_values=0.0
+    )
+
+    # 4️⃣ Update metadata
+    info.sample_count_0 = nx + 2
+    info.sample_count_1 = ny + 2
+    info.sample_count_2 = nz + 2
+    info.origin_0 -= info.dimensions_0
+    info.origin_1 -= info.dimensions_1
+    info.origin_2 -= info.dimensions_2
+
+    info.min_sampled = 0.0
+    info.max_sampled = 1.0
+    info.mean_sampled = float(np.mean(padded))
+    info.sigma_sampled = float(np.std(padded))
+
+    # 5️⃣ Flatten back into CIF order (reverse of reshape)
+    padded_for_cif = np.transpose(padded, (2, 1, 0)).ravel().tolist()
+
+    lattice_cif.segmentation_block.segmentation_data_3d.values = padded_for_cif
     lattice_cif.filename = name
-    lattice_cif.segmentation_block.segmentation_data_3d.values = data_3d_values
 
     return lattice_cif
 
 
 def lattice_model_to_bcif(lattice_model: LatticeSegmentationCIF) -> bytes:
-    writer = create_binary_writer(encoder="cvsx2mvsx")
+    writer = create_binary_writer(encoder="VolumeServer")
 
     # this has to be here otherwise the volumeFromDensityServerData in molstar won't work
     # because it expects the data to be in the second block ¯\_(ツ)_/¯
-    writer.start_data_block("UNUSED")
+    writer.start_data_block("SERVER")
 
     writer.start_data_block("VOLUME_DATA")
     writer.write_category(
