@@ -8,4 +8,5 @@ dependencies = [
     "ciftools>=0.2.1",
     "molviewspec>=1.7.0",
     "pydantic>=2.12.3",
+    "scipy>=1.16.3",
 ]
