@@ -252,7 +252,7 @@ def get_lattice_segment(
     info.sigma_sampled = float(padded.std())
 
     # Flatten back into CIF order (reverse of the reshape/transposition above)
-    padded_for_cif = np.transpose(padded, (2, 1, 0)).ravel().tolist()
+    padded_for_cif = np.transpose(padded, (2, 1, 0)).ravel()
     lattice_cif.segmentation_block.segmentation_data_3d.values = padded_for_cif
 
     lattice_cif.filename = name
