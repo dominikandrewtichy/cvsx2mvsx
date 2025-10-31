@@ -2,6 +2,8 @@ import os
 
 import numpy as np
 from molviewspec import create_builder
+from molviewspec.builder import Root
+from molviewspec.mvsx_converter import mvsj_to_mvsx
 from skimage import measure
 
 from lib.convert.convert_all import rgb_to_hex
@@ -134,59 +136,97 @@ def voxel_to_mesh(
     return vertices, indices, triangle_groups
 
 
-if not os.path.exists("temp"):
-    os.mkdir("temp")
-
-data = read_bcif_file(
-    zip_path="data/cvsx/zipped/emd-1832.cvsx",
-    inner_path="lattice_0_0.bcif",
-)
-lattice_model = bcif_to_lattice_segmentation_cif(data, "0")
-
-builder = create_builder()
-segment_ids = lattice_model.segmentation_block.segmentation_data_table.segment_id
-for segment_id in set(segment_ids):
-    if segment_id == 0:
-        continue
-    model = get_lattice_segment(
-        lattice_model.model_copy(deep=True),
-        segment_id,
-        f"{segment_id}",
-        smooth_iterations=1,
+def add_segments(builder: Root, zip_path, inner_path):
+    data = read_bcif_file(
+        zip_path=zip_path,
+        inner_path=inner_path,
     )
-    vertices, indices, triangle_groups = voxel_to_mesh(model, segment_id)
-    info = model.segmentation_block.volume_data_3d_info
+    lattice_model = bcif_to_lattice_segmentation_cif(data, "0")
 
-    voxel_size = np.array(
-        [
-            info.spacegroup_cell_size_0 / info.sample_count_0,
-            info.spacegroup_cell_size_1 / info.sample_count_1,
-            info.spacegroup_cell_size_2 / info.sample_count_2,
-        ],
+    segment_ids = lattice_model.segmentation_block.segmentation_data_table.segment_id
+    for segment_id in set(segment_ids):
+        if segment_id == 0:
+            continue
+        model = get_lattice_segment(
+            lattice_model.model_copy(deep=True),
+            segment_id,
+            f"{segment_id}",
+            smooth_iterations=1,
+        )
+        vertices, indices, triangle_groups = voxel_to_mesh(model, segment_id)
+        info = model.segmentation_block.volume_data_3d_info
+
+        voxel_size = np.array(
+            [
+                info.spacegroup_cell_size_0 / info.sample_count_0,
+                info.spacegroup_cell_size_1 / info.sample_count_1,
+                info.spacegroup_cell_size_2 / info.sample_count_2,
+            ],
+        )
+        origin = np.array([info.origin_0, info.origin_1, info.origin_2])
+        origin_voxel = origin + 0.5
+
+        # 2. Scale vertices by voxel_size to get world units
+        S = scaling_matrix(voxel_size)
+
+        # 3. Build translation matrices in **voxel units before scaling**
+        T_neg = translation_matrix(-origin_voxel)
+        T_pos = translation_matrix(origin_voxel)
+
+        M = T_pos @ S @ T_neg
+        matrix = M.T.flatten().tolist()
+
+        builder.primitives(
+            instances=[matrix],
+        ).mesh(
+            vertices=vertices.tolist(),
+            indices=indices.tolist(),
+            triangle_groups=triangle_groups.tolist(),
+            color=get_segment_color(segment_id),
+            tooltip=f"{segment_id}",
+        )
+
+
+def add_volume(builder: Root):
+    volume_cif = builder.download(url="./emd-1273/volume_0_0.bcif").parse(format="bcif")
+    volume_data = volume_cif.volume(channel_id="0")
+    volume_representation = volume_data.representation(
+        type="isosurface",
+        relative_isovalue=1,
+        show_faces=True,
+        show_wireframe=False,
     )
-    origin = np.array([info.origin_0, info.origin_1, info.origin_2])
-    origin_voxel = origin + 0.5
+    volume_representation.color(color="white").opacity(opacity=0.5)
 
-    # 2. Scale vertices by voxel_size to get world units
-    S = scaling_matrix(voxel_size)
+    return builder
 
-    # 3. Build translation matrices in **voxel units before scaling**
-    T_neg = translation_matrix(-origin_voxel)
-    T_pos = translation_matrix(origin_voxel)
 
-    M = T_pos @ S @ T_neg
-    matrix = M.T.flatten().tolist()
+def main():
+    if not os.path.exists("temp"):
+        os.mkdir("temp")
 
-    builder.primitives(
-        instances=[matrix],
-    ).mesh(
-        vertices=vertices.tolist(),
-        indices=indices.tolist(),
-        triangle_groups=triangle_groups.tolist(),
-        color=get_segment_color(segment_id),
-        tooltip=f"{segment_id}",
-    )
-    with open(f"temp/emd-1832-mesh-{segment_id}.mvsj", "w") as f:
+    builder = create_builder()
+    zip_path = "data/cvsx/zipped/emd-1273.cvsx"
+
+    inner_paths = [
+        "lattice_emd_1273_msk_1_0.bcif",
+        "lattice_emd_1273_msk_2_0.bcif",
+        "lattice_emd_1273_msk_3_0.bcif",
+        "lattice_emd_1273_msk_4_0.bcif",
+        "lattice_emd_1273_msk_5_0.bcif",
+    ]
+    add_volume(builder)
+    for inner_path in inner_paths:
+        add_segments(builder, zip_path, inner_path)
+
+    with open("temp/mesh.mvsj", "w") as f:
         f.write(builder.get_state().model_dump_json(exclude_none=True))
-with open("temp/emd-1832-mesh.mvsj", "w") as f:
-    f.write(builder.get_state().model_dump_json(exclude_none=True))
+
+    mvsj_to_mvsx(
+        input_mvsj_path="temp/mesh.mvsj",
+        output_mvsx_path="temp/mesh.mvsx",
+    )
+
+
+if __name__ == "__main__":
+    main()
