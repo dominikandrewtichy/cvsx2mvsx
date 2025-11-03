@@ -14,7 +14,6 @@ class SegmentationData3D(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     values: np.ndarray[float]
 
-
 class SegmentationBlock(BaseModel):
     volume_data_3d_info: VolumeData3DInfo
     volume_data_time_and_channel_info: VolumeDataTimeAndChannelInfo

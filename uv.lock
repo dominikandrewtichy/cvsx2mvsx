@@ -86,6 +86,7 @@ dependencies = [
     { name = "ciftools" },
     { name = "fastapi", extra = ["standard"] },
     { name = "molviewspec" },
+    { name = "msgpack" },
     { name = "pydantic" },
     { name = "scikit-image" },
 ]
@@ -95,6 +96,7 @@ requires-dist = [
     { name = "ciftools", specifier = ">=0.2.1" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.120.3" },
     { name = "molviewspec", specifier = ">=1.7.0" },
+    { name = "msgpack", specifier = ">=1.1.2" },
     { name = "pydantic", specifier = ">=2.12.3" },
     { name = "scikit-image", specifier = ">=0.25.2" },
 ]

@@ -1,5 +1,7 @@
+import json
 import os
 
+import msgpack
 import numpy as np
 from molviewspec import create_builder
 from molviewspec.builder import Root
@@ -120,7 +122,11 @@ def voxel_to_mesh(
     #     constant_values=0.0,
     # )
 
-    verts, faces, normals, values = measure.marching_cubes(data, level=0.5)
+    verts, faces, normals, values = measure.marching_cubes(
+        volume=data,
+        level=0.5,
+        method="lewiner",
+    )
 
     faces = faces[:, ::-1]
 
@@ -191,7 +197,7 @@ def add_volume(builder: Root):
         show_faces=True,
         show_wireframe=False,
     )
-    volume_representation.color(color="gray").opacity(opacity=0.2)
+    volume_representation.color(color="white").opacity(opacity=0.5)
 
     return builder
 
@@ -201,16 +207,12 @@ def main():
         os.mkdir("temp")
 
     builder = create_builder()
-    zip_path = "data/cvsx/zipped/emd-1273.cvsx"
+    zip_path = "data/cvsx/zipped/idr-13457537-all-data.cvsx"
 
     segmentation_ids = [
-        "emd_1273_msk_1",
-        "emd_1273_msk_2",
-        "emd_1273_msk_3",
-        "emd_1273_msk_4",
-        "emd_1273_msk_5",
+        "0",
     ]
-    add_volume(builder)
+    # add_volume(builder)
     for segmentation_id in segmentation_ids:
         add_segments(builder, zip_path, segmentation_id)
     state = builder.get_state()
@@ -225,3 +227,12 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    with open("temp/mesh.mvsj", "rb") as f:
+        json_data = f.read()
+
+    python_dict = json.loads(json_data)
+    msgpack_data = msgpack.packb(python_dict)
+
+    with open("temp/mesh.mvsj.msgpack", "wb") as f:
+        f.write(msgpack_data)

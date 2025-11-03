@@ -18,6 +18,9 @@ from lib.models.cif.lattice_segmentation import (
 )
 from lib.models.cif_categories.volume_data_3d import VolumeData3dCategory
 from lib.models.cif_categories.volume_data_3d_info import VolumeData3dInfoCategory
+from lib.models.cif_categories.volume_data_time_and_channel_info import (
+    VolumeDataTimeAndChannelInfoCategory,
+)
 
 
 def read_bcif_file(zip_path: str, inner_path: str) -> bytes:
@@ -270,12 +273,24 @@ def lattice_model_to_bcif(lattice_model: LatticeSegmentationCIF) -> bytes:
     writer.start_data_block("VOLUME_DATA")
     writer.write_category(
         VolumeData3dInfoCategory,
-        [lattice_model.segmentation_block.volume_data_3d_info],
+        [
+            lattice_model.segmentation_block.volume_data_3d_info,
+        ],
     )
-    values = lattice_model.segmentation_block.segmentation_data_3d.values
+    writer.write_category(
+        VolumeDataTimeAndChannelInfoCategory,
+        [
+            lattice_model.segmentation_block.volume_data_time_and_channel_info,
+        ],
+    )
     writer.write_category(
         VolumeData3dCategory,
-        [np.ravel(values, order="F")],
+        [
+            np.ravel(
+                lattice_model.segmentation_block.segmentation_data_3d.values,
+                order="F",
+            ),
+        ],
     )
 
     return writer.encode()

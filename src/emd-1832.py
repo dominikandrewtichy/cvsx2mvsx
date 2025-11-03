@@ -188,7 +188,7 @@ def add_segments(builder: Root, zip_path, inner_path):
 
 
 def add_volume(builder: Root):
-    volume_cif = builder.download(url="./volume_0_0.bcif").parse(format="bcif")
+    volume_cif = builder.download(url="http://localhost:8000/temp/emd-1832/volume_0_0.bcif").parse(format="bcif")
     volume_data = volume_cif.volume(channel_id="0")
     volume_representation = volume_data.representation(
         type="isosurface",
@@ -215,12 +215,12 @@ def main():
     for inner_path in inner_paths:
         add_segments(builder, zip_path, inner_path)
 
-    with open("temp/mesh.mvsj", "w") as f:
+    with open("temp/emd-1832.mvsj", "w") as f:
         f.write(builder.get_state().model_dump_json(exclude_none=True))
 
     mvsj_to_mvsx(
-        input_mvsj_path="temp/mesh.mvsj",
-        output_mvsx_path="temp/mesh.mvsx",
+        input_mvsj_path="temp/emd-1832.mvsj",
+        output_mvsx_path="temp/emd-1832.mvsx",
     )
 
 
