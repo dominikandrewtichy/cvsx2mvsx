@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ShapePrimitiveKind(str, Enum):
@@ -22,17 +22,20 @@ class RotationParameters(BaseModel):
 
 
 class Sphere(ShapePrimitiveBase):
+    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.sphere, frozen=True)
     center: tuple[float, float, float]
     radius: float
 
 
 class Box(ShapePrimitiveBase):
+    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.box, frozen=True)
     translation: tuple[float, float, float]
     scaling: tuple[float, float, float]
     rotation: RotationParameters
 
 
 class Cylinder(ShapePrimitiveBase):
+    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.cylinder, frozen=True)
     start: tuple[float, float, float]
     end: tuple[float, float, float]
     radius_bottom: float
@@ -40,6 +43,7 @@ class Cylinder(ShapePrimitiveBase):
 
 
 class Ellipsoid(ShapePrimitiveBase):
+    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.ellipsoid, frozen=True)
     dir_major: tuple[float, float, float]
     dir_minor: tuple[float, float, float]
     center: tuple[float, float, float]
@@ -47,6 +51,7 @@ class Ellipsoid(ShapePrimitiveBase):
 
 
 class Pyramid(ShapePrimitiveBase):
+    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.pyramid, frozen=True)
     translation: tuple[float, float, float]
     scaling: tuple[float, float, float]
     rotation: RotationParameters
