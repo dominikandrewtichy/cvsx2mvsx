@@ -1,7 +1,10 @@
 from numpy import ndarray
 from pydantic import BaseModel
 
-from lib.models.cif.read.common import CifFile, VolumeData3dInfo
+from lib.models.read.common import (
+    CifFile,
+    VolumeData3dInfo,
+)
 
 
 class Mesh(BaseModel):

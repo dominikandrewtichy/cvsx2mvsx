@@ -1,7 +1,7 @@
 import numpy as np
 from pydantic import BaseModel, ConfigDict
 
-from lib.models.cif.read.common import (
+from lib.models.read.common import (
     CifFile,
     VolumeData3dInfo,
     VolumeDataTimeAndChannelInfo,
