@@ -14,7 +14,7 @@ from lib.convert.lattice_segmentation import (
     get_lattice_segment,
     read_bcif_file,
 )
-from lib.models.cif.lattice_segmentation import LatticeSegmentationCIF
+from lib.models.read.lattice_segmentation import LatticeSegmentationCIF
 from lib.models.config.mvsx_config import MVSXGeneratorConfig, SegmentationConfig
 from lib.utils.transforms import compute_voxel_to_world_transform, matrix_to_flat_list
 

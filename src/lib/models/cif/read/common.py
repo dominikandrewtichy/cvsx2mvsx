@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class VolumeData3DInfo(BaseModel):
+class VolumeData3dInfo(BaseModel):
     name: str
     axis_order_0: int
     axis_order_1: int
@@ -36,3 +36,7 @@ class VolumeData3DInfo(BaseModel):
 class VolumeDataTimeAndChannelInfo(BaseModel):
     time_id: int
     channel_id: int
+
+
+class CifFile(BaseModel):
+    filename: str

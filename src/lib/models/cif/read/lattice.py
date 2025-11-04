@@ -1,7 +1,11 @@
 import numpy as np
 from pydantic import BaseModel, ConfigDict
 
-from lib.models.cif.volume import VolumeData3DInfo, VolumeDataTimeAndChannelInfo
+from lib.models.cif.read.common import (
+    CifFile,
+    VolumeData3dInfo,
+    VolumeDataTimeAndChannelInfo,
+)
 
 
 class SegmentationDataTable(BaseModel):
@@ -10,18 +14,17 @@ class SegmentationDataTable(BaseModel):
     segment_id: np.ndarray[int]
 
 
-class SegmentationData3D(BaseModel):
+class SegmentationData3d(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     values: np.ndarray[float]
 
+
 class SegmentationBlock(BaseModel):
-    volume_data_3d_info: VolumeData3DInfo
+    volume_data_3d_info: VolumeData3dInfo
     volume_data_time_and_channel_info: VolumeDataTimeAndChannelInfo
     segmentation_data_table: SegmentationDataTable
-    segmentation_data_3d: SegmentationData3D
+    segmentation_data_3d: SegmentationData3d
 
 
-class LatticeSegmentationCIF(BaseModel):
-    filename: str | None = None
-    segmentation_id: str
+class LatticeCif(CifFile):
     segmentation_block: SegmentationBlock

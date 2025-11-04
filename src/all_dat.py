@@ -14,7 +14,7 @@ from lib.convert.lattice_segmentation import (
     get_lattice_segment,
     read_bcif_file,
 )
-from lib.models.cif.lattice_segmentation import LatticeSegmentationCIF
+from lib.models.read.lattice_segmentation import LatticeSegmentationCIF
 
 
 def translation_matrix(t):
