@@ -1,7 +1,7 @@
 import os
 from uuid import uuid4
 
-from lib.convert.lattice_segmentation import (
+from src.convert.lattice_segmentation import (
     bcif_to_lattice_segmentation_cif,
     get_lattice_segment,
     lattice_model_to_bcif,

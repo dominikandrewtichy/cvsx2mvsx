@@ -1,6 +1,6 @@
-from lib.convert.convert_all import convert_all
-from lib.convert.cvsx_to_inter import convert_cvsx_to_inter
-from src.lib.io.cvsx.cvsx_loader import load_cvsx_entry
+from src.convert.convert_all import convert_all
+from src.convert.cvsx_to_inter import convert_cvsx_to_inter
+from src.src.io.cvsx.cvsx_loader import load_cvsx_entry
 
 cvsx_filepath = "data/cvsx/zipped/custom-tubhiswt.cvsx"
 

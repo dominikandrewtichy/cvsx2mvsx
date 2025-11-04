@@ -8,13 +8,13 @@ from molviewspec.builder import Root
 from molviewspec.mvsx_converter import mvsj_to_mvsx
 from skimage import measure
 
-from lib.convert.convert_all import rgb_to_hex
-from lib.convert.lattice_segmentation import (
+from src.convert.convert_all import rgb_to_hex
+from src.convert.lattice_segmentation import (
     bcif_to_lattice_segmentation_cif,
     get_lattice_segment,
     read_bcif_file,
 )
-from lib.models.read.lattice_segmentation import LatticeSegmentationCIF
+from src.models.read.lattice_segmentation import LatticeSegmentationCIF
 
 
 def translation_matrix(t):
