@@ -1,10 +1,7 @@
-from src.convert.convert_all import rgba_to_hex_color
-from src.models.cvsx.cvsx_annotations import ChannelAnnotation
 from src.models.cvsx.cvsx_entry import CVSXEntry
-from src.models.mvsx.mvsx_entry import MVSXVolume
+from src.models.mvsx.mvsx_entry import MVSXSegmentation
 
-
-def get_volume_annotations(cvsx_entry: CVSXEntry) -> dict[str, ChannelAnnotation]:
+def get_segmentation_annotations(cvsx_entry: CVSXEntry) -> dict[str, ChannelAnnotation]:
     if cvsx_entry.annotations.volume_channels_annotations:
         return {}
 
@@ -15,9 +12,9 @@ def get_volume_annotations(cvsx_entry: CVSXEntry) -> dict[str, ChannelAnnotation
     return annotations_map
 
 
-def cvsx_to_mvsx_volumes(cvsx_entry: CVSXEntry) -> list[MVSXVolume]:
-    mvsx_volumes = []
-    annotations = get_volume_annotations(cvsx_entry)
+def cvsx_to_mvsx_segmentations(cvsx_entry: CVSXEntry) -> list[MVSXSegmentation]:
+    mvsx_segmentations = []
+    annotations = get_segmentation_annotations(cvsx_entry)
 
     for source_filepath, volume_info in cvsx_entry.index.volumes.items():
         destination_filepath = f"volumes/{source_filepath}"
@@ -39,6 +36,6 @@ def cvsx_to_mvsx_volumes(cvsx_entry: CVSXEntry) -> list[MVSXVolume]:
             opacity=opacity,
         )
 
-        mvsx_volumes.append(mvsx_volume)
+        mvsx_segmentations.append(mvsx_volume)
 
-    return mvsx_volumes
+    return mvsx_segmentations

@@ -52,9 +52,9 @@ class DescriptionData(BaseModel):
 
 
 class CVSXAnnotations(BaseModel):
-    name: Optional[str]
     entry_id: EntryId
-    descriptions: dict[str, DescriptionData]
-    segment_annotations: list[SegmentAnnotationData]
+    name: Optional[str]
     details: Optional[str]
+    descriptions: dict[str, DescriptionData]
     volume_channels_annotations: Optional[list[ChannelAnnotation]]
+    segment_annotations: list[SegmentAnnotationData]
