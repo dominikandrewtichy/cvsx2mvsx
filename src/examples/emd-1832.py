@@ -12,7 +12,6 @@ from src.convert.lattice_segmentation import (
     get_lattice_segment,
     read_bcif_file,
 )
-from src.models.read.lattice_segmentation import LatticeSegmentationCIF
 
 
 def translation_matrix(t):

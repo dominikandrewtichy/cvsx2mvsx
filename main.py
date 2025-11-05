@@ -1,38 +1,72 @@
-from src.convert.volume import cvsx_to_mvsx_volumes
-from src.io.cvsx.cvsx_loader import load_cvsx_entry
-from src.utils.print_utils import print_cvsx_entry
+import json
+
+from molviewspec import GlobalMetadata, States, create_builder
+
+from src.convert.convert_all import rgba_to_hex_color
+from src.examples.empiar_10070 import add_mesh_from_bcif
 
 
 def main():
-    # Load a CVSX entry from the zipped data directory
-    cvsx_path = "data/cvsx/zipped/custom-tubhiswt.cvsx"
+    with open("data/cvsx/unzipped/empiar-10070/annotations.json") as f:
+        json_string = f.read()
+        annotations = json.loads(json_string)
 
-    print(f"Loading CVSX entry from: {cvsx_path}")
-    print("=" * 80)
+    builder = create_builder()
 
-    entry = load_cvsx_entry(cvsx_path)
+    for segment_annotation in annotations["segment_annotations"]:
+        rgba_color = segment_annotation["color"]
+        color = rgba_to_hex_color(rgba_color)
+        segment_id = segment_annotation["segment_id"]
+        segment_kind = segment_annotation["segment_kind"]
+        segmentation_id = segment_annotation["segmentation_id"]
+        time = segment_annotation["time"]
+        filename = f"{segment_kind}_{segment_id}_{segmentation_id}_{time}"
+        opacity = 1
+        uri = f"data/cvsx/unzipped/empiar-10070/{filename}.bcif"
 
-    print_cvsx_entry(entry)
-    print("=" * 80)
-    print("Successfully loaded and printed CVSX entry!")
+        add_mesh_from_bcif(uri, filename, color, opacity)
 
-    # Test cvsx_to_mvsx_volumes
-    print("\n" + "=" * 80)
-    print("Testing cvsx_to_mvsx_volumes...")
-    print("=" * 80)
+        builder.primitives_from_uri(
+            uri=f"http://127.0.0.1:8000/data/mvsx/unzipped/empiar-10070/{filename}.mvsj"
+        )
 
-    mvsx_volumes = cvsx_to_mvsx_volumes(entry)
+    index_snapshot = builder.get_snapshot(key="index")
+    segment_snapshots = []
 
-    print(f"\nConverted {len(mvsx_volumes)} volumes:")
-    for i, volume in enumerate(mvsx_volumes, 1):
-        print(f"\nVolume {i}:")
-        print(f"  Source: {volume.source_filepath}")
-        print(f"  Destination: {volume.destination_filepath}")
-        print(f"  Channel ID: {volume.channel_id}")
-        print(f"  Timeframe ID: {volume.timeframe_id}")
-        print(f"  Isovalue: {volume.isovalue}")
-        print(f"  Color: {volume.color}")
-        print(f"  Opacity: {volume.opacity}")
+    for segment_annotation in annotations["segment_annotations"]:
+        segment_id = segment_annotation["segment_id"]
+        segment_kind = segment_annotation["segment_kind"]
+        segmentation_id = segment_annotation["segmentation_id"]
+        time = segment_annotation["time"]
+        filename = f"{segment_kind}_{segment_id}_{segmentation_id}_{time}"
+        builder_copy = builder.model_copy()
+        builder_copy.animation(
+            include_camera=True,
+        ).interpolate(
+            kind="scalar",
+            target_ref=f"{filename}",
+            property="opacity",
+            start=0.5,
+            end=0.5,
+            duration_ms=500,
+        )
+        segment_snapshot = builder_copy.get_snapshot(
+            key=f"{filename}",
+            title=f"{filename}",
+            description=f"# {filename}\n\n[index](#index)",
+            transition_duration_ms=500,
+        )
+        segment_snapshots.append(segment_snapshot)
+
+    states = States(
+        metadata=GlobalMetadata(),
+        snapshots=[index_snapshot, *segment_snapshots],
+    )
+
+    with open("data/mvsx/unzipped/empiar-10070/index.mvsj", "w") as f:
+        f.write(
+            states.model_dump_json(indent=2, exclude_none=True),
+        )
 
 
 if __name__ == "__main__":

@@ -31,3 +31,4 @@ async def private_network_middleware(request: Request, call_next):
 
 
 app.mount("/temp", StaticFiles(directory="temp"), name="temp")
+app.mount("/data", StaticFiles(directory="data"), name="data")
