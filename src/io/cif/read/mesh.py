@@ -1,33 +1,40 @@
 from ciftools.serialization import loads
-from src.models.cif.read.common import VolumeData3dInfo
-from src.models.cif.read.mesh import Mesh, MeshBlock, MeshCif, MeshTriangle, MeshVertex
 
 from src.io.cif.read.common import find_block, find_category, to_item, to_ndarray
+from src.models.read.common import VolumeData3dInfo
+from src.models.read.mesh import Mesh, MeshBlock, MeshCif, MeshTriangle, MeshVertex
 
 
 def parse_mesh_bcif(bcif_data: bytes) -> MeshCif:
     cif_file = loads(bcif_data, lazy=True)
 
-    segmentation_block = find_block(cif_file, "VOLUME_INFO")
-    if segmentation_block is None:
+    volume_info_block = find_block(cif_file, "VOLUME_INFO")
+    meshes_block = find_block(cif_file, "MESHES")
+
+    if volume_info_block is None:
         raise ValueError("VOLUME_INFO data block not found in CIF file")
+    if meshes_block is None:
+        raise ValueError("MESHES data block not found in CIF file")
 
     volume_data_3d_info_category = find_category(
-        segmentation_block, "volume_data_3d_info"
+        volume_info_block, "volume_data_3d_info"
     )
-    mesh_category = find_category(segmentation_block, "mesh")
-    mesh_vertex_category = find_category(segmentation_block, "mesh_vertex")
-    mesh_triangle_category = find_category(segmentation_block, "mesh_triangle")
+    mesh_category = find_category(meshes_block, "mesh")
+    mesh_vertex_category = find_category(meshes_block, "mesh_vertex")
+    mesh_triangle_category = find_category(meshes_block, "mesh_triangle")
 
-    if not all(
-        [
-            volume_data_3d_info_category,
-            mesh_category,
-            mesh_vertex_category,
-            mesh_triangle_category,
-        ]
-    ):
-        raise ValueError("Segmentation data block is missing a category.")
+    if not volume_data_3d_info_category:
+        raise ValueError(
+            "Segmentation data block is missing category 'volume_data_3d_info'."
+        )
+    if not mesh_category:
+        raise ValueError("Segmentation data block is missing category 'mesh'.")
+    if not mesh_vertex_category:
+        raise ValueError("Segmentation data block is missing category 'mesh_vertex'.")
+    if not mesh_triangle_category:
+        raise ValueError(
+            "Segmentation data block is missing category ' mesh_triangle'."
+        )
 
     volume_data_3d_info_data = VolumeData3dInfo(
         name=to_item(volume_data_3d_info_category, "name"),
@@ -74,21 +81,20 @@ def parse_mesh_bcif(bcif_data: bytes) -> MeshCif:
     )
 
     mesh_data = Mesh(
-        id=to_item(mesh_category, "time_id"),
-        channel_id=to_item(mesh_category, "channel_id"),
+        id=to_ndarray(mesh_category, "id"),
     )
 
     mesh_vertex_data = MeshVertex(
-        mesh_id=to_ndarray("mesh_id"),
-        vertex_id=to_ndarray("vertex_id"),
-        x=to_ndarray("x"),
-        y=to_ndarray("y"),
-        z=to_ndarray("z"),
+        mesh_id=to_ndarray(mesh_vertex_category, "mesh_id"),
+        vertex_id=to_ndarray(mesh_vertex_category, "vertex_id"),
+        x=to_ndarray(mesh_vertex_category, "x"),
+        y=to_ndarray(mesh_vertex_category, "y"),
+        z=to_ndarray(mesh_vertex_category, "z"),
     )
 
     mesh_triangle_data = MeshTriangle(
-        mesh_id=to_ndarray("mesh_id"),
-        vertex_id=to_ndarray("vertex_id"),
+        mesh_id=to_ndarray(mesh_triangle_category, "mesh_id"),
+        vertex_id=to_ndarray(mesh_triangle_category, "vertex_id"),
     )
 
     mesh_block_data = MeshBlock(
@@ -99,5 +105,6 @@ def parse_mesh_bcif(bcif_data: bytes) -> MeshCif:
     )
 
     return MeshCif(
+        filename="PLACEHOLDER",
         mesh_block=mesh_block_data,
     )

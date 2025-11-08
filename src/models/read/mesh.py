@@ -1,5 +1,5 @@
 from numpy import ndarray
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from src.models.read.common import (
     CifFile,
@@ -8,10 +8,14 @@ from src.models.read.common import (
 
 
 class Mesh(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     id: ndarray[int]
 
 
 class MeshVertex(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     mesh_id: ndarray[int]
     vertex_id: ndarray[int]
     x: ndarray[float]
@@ -20,6 +24,8 @@ class MeshVertex(BaseModel):
 
 
 class MeshTriangle(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
     mesh_id: ndarray[int]
     vertex_id: ndarray[int]
 

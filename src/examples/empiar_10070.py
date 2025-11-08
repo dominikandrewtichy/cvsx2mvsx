@@ -1,11 +1,13 @@
 import json
-from itertools import chain
 
+import numpy as np
 from ciftools.serialization import loads
 from molviewspec import create_builder
 from molviewspec.builder import Root
 
 from src.convert.convert_all import rgba_to_hex_color
+from src.io.cif.read.mesh import parse_mesh_bcif
+from src.models.read.mesh import MeshCif
 
 
 def empiar_10070_volume(builder: Root) -> Root:
@@ -55,70 +57,76 @@ def get_cif_contents(uri: str):
     return result
 
 
-def add_mesh_from_bcif(uri: str, filename: str, color: str, opacity: float):
+def add_mesh_from_bcif(
+    uri: str,
+    segment_name: str,
+    color: str,
+    opacity: float,
+):
+    with open(uri, "rb") as f:
+        data: MeshCif = parse_mesh_bcif(f.read())
+
+    x = np.array(data.mesh_block.mesh_vertex.x, dtype=np.float64)
+    y = np.array(data.mesh_block.mesh_vertex.y, dtype=np.float64)
+    z = np.array(data.mesh_block.mesh_vertex.z, dtype=np.float64)
+
+    indices = data.mesh_block.mesh_triangle.vertex_id
+    triangle_groups = data.mesh_block.mesh_triangle.mesh_id
+
+    spacegroup_cell_size_0 = data.mesh_block.volume_data_3d_info.spacegroup_cell_size_0
+    spacegroup_cell_size_1 = data.mesh_block.volume_data_3d_info.spacegroup_cell_size_1
+    spacegroup_cell_size_2 = data.mesh_block.volume_data_3d_info.spacegroup_cell_size_2
+
+    sample_count_0 = data.mesh_block.volume_data_3d_info.sample_count_0
+    sample_count_1 = data.mesh_block.volume_data_3d_info.sample_count_1
+    sample_count_2 = data.mesh_block.volume_data_3d_info.sample_count_2
+
+    voxel_size_x = spacegroup_cell_size_0 / sample_count_0
+    voxel_size_y = spacegroup_cell_size_1 / sample_count_1
+    voxel_size_z = spacegroup_cell_size_2 / sample_count_2
+
+    x *= voxel_size_x
+    y *= voxel_size_y
+    z *= voxel_size_z
+
+    x = np.round(x, 2)
+    y = np.round(y, 2)
+    z = np.round(z, 2)
+
+    vertices = np.column_stack((x, y, z))
+
+    indices_reshaped = indices.reshape(-1, 3)
+    flipped_indices = indices_reshaped[:, [0, 2, 1]]
+
     builder = create_builder()
-
-    data = get_cif_contents(uri=uri)
-
-    x = data["mesh_vertex_x"]
-    y = data["mesh_vertex_y"]
-    z = data["mesh_vertex_z"]
-    indices = data["mesh_triangle_vertex_id"]
-    triangle_groups = data["mesh_triangle_mesh_id"]
-
-    # Load scaling info from volume_data_3d_info (if available)
-    try:
-        voxel_size_x = (
-            data["volume_data_3d_info_spacegroup_cell_size[0]"][0]
-            / data["volume_data_3d_info_sample_count[0]"][0]
-        )
-        voxel_size_y = (
-            data["volume_data_3d_info_spacegroup_cell_size[1]"][0]
-            / data["volume_data_3d_info_sample_count[1]"][0]
-        )
-        voxel_size_z = (
-            data["volume_data_3d_info_spacegroup_cell_size[2]"][0]
-            / data["volume_data_3d_info_sample_count[2]"][0]
-        )
-    except KeyError:
-        # Fallback constant scaling if volume info not in mesh file
-        voxel_size_x = voxel_size_y = voxel_size_z = 150.0
-
-    # Scale coordinates
-    x = [xi * voxel_size_x for xi in x]
-    y = [yi * voxel_size_y for yi in y]
-    z = [zi * voxel_size_z for zi in z]
-
-    zipped = zip(x, y, z)
-    vertices = list(chain.from_iterable(zipped))
-
-    flipped_indices = []
-    for i in range(0, len(indices), 3):
-        v0, v1, v2 = indices[i : i + 3]
-        flipped_indices.extend([v0, v2, v1])  # flip winding
-
     builder.primitives(
-        ref=f"{filename}",
-        snapshot_key=f"{filename}",
+        ref=f"{segment_name}",
+        snapshot_key=f"{segment_name}",
         opacity=opacity,
     ).mesh(
-        vertices=vertices,
-        indices=flipped_indices,
-        triangle_groups=triangle_groups,
+        vertices=vertices.ravel().tolist(),
+        indices=flipped_indices.ravel().tolist(),
+        triangle_groups=triangle_groups.ravel().tolist(),
         color=color,
-        tooltip=f"{filename}",
+        tooltip=f"{segment_name}",
     )
 
     state = builder.get_state()
     primitives_node = state.root.children[0]
 
-    with open(f"data/mvsx/unzipped/empiar-10070/{filename}.mvsj", "w") as f:
+    with open(f"data/mvsx/unzipped/empiar-10070/{segment_name}.mvsj", "w") as f:
         f.write(
-            primitives_node.model_dump_json(
-                indent=2,
-                exclude_none=True,
+            json.dumps(
+                obj=primitives_node.model_dump(exclude_none=True),
+                separators=(",", ":"),
             )
         )
+    # with open(f"data/mvsx/unzipped/empiar-10070/{segment_name}.msgpack", "wb") as f:
+    #     packed = msgpack.packb(
+    #         primitives_node.model_dump(exclude_none=True),
+    #         use_bin_type=True,
+    #     )
+    #     f.write(packed)
 
 
 def empiar_10070():

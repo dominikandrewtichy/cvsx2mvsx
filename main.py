@@ -13,7 +13,7 @@ def main():
 
     builder = create_builder()
 
-    for segment_annotation in annotations["segment_annotations"]:
+    def add_primitives_from_uri(builder, segment_annotation):
         rgba_color = segment_annotation["color"]
         color = rgba_to_hex_color(rgba_color)
         segment_id = segment_annotation["segment_id"]
@@ -29,8 +29,10 @@ def main():
         builder.primitives_from_uri(
             uri=f"http://127.0.0.1:8000/data/mvsx/unzipped/empiar-10070/{filename}.mvsj"
         )
+        return builder
 
-    index_snapshot = builder.get_snapshot(key="index")
+    for segment_annotation in annotations["segment_annotations"]:
+
     segment_snapshots = []
 
     for segment_annotation in annotations["segment_annotations"]:
@@ -55,6 +57,7 @@ def main():
             title=f"{filename}",
             description=f"# {filename}\n\n[index](#index)",
             transition_duration_ms=500,
+            linger_duration_ms=0,
         )
         segment_snapshots.append(segment_snapshot)
 
