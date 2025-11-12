@@ -6,7 +6,7 @@ from zipfile import BadZipFile, ZipFile
 from pydantic import ValidationError
 
 from src.models.cvsx.cvsx_annotations import CVSXAnnotations
-from src.models.cvsx.cvsx_entry import CVSXEntry
+from src.models.cvsx.cvsx_file import CVSXFile
 from src.models.cvsx.cvsx_index import CVSXIndex
 from src.models.cvsx.cvsx_metadata import CVSXMetadata
 from src.models.cvsx.cvsx_query import CVSXQuery
@@ -88,26 +88,26 @@ def load_model_from_zip(zip_path: str, inner_path: str, model_class: Type[T]) ->
         )
 
 
-def load_cvsx_entry(zip_path: str) -> CVSXEntry:
-    check_zip_file_exists(zip_path)
-    check_zip_integrity(zip_path)
+def load_cvsx_entry(cvsx_path: str) -> CVSXFile:
+    check_zip_file_exists(cvsx_path)
+    check_zip_integrity(cvsx_path)
 
-    check_file_exists_in_zip(zip_path, "index.json")
+    check_file_exists_in_zip(cvsx_path, "index.json")
 
-    cvsx_index = load_model_from_zip(zip_path, "index.json", CVSXIndex)
+    cvsx_index = load_model_from_zip(cvsx_path, "index.json", CVSXIndex)
 
-    check_all_files_in_index(zip_path, cvsx_index)
+    check_all_files_in_index(cvsx_path, cvsx_index)
 
     annotations = cvsx_index.annotations
     metadata = cvsx_index.metadata
     query = cvsx_index.query
 
-    cvsx_annotations = load_model_from_zip(zip_path, annotations, CVSXAnnotations)
-    cvsx_metadata = load_model_from_zip(zip_path, metadata, CVSXMetadata)
-    cvsx_query = load_model_from_zip(zip_path, query, CVSXQuery)
+    cvsx_annotations = load_model_from_zip(cvsx_path, annotations, CVSXAnnotations)
+    cvsx_metadata = load_model_from_zip(cvsx_path, metadata, CVSXMetadata)
+    cvsx_query = load_model_from_zip(cvsx_path, query, CVSXQuery)
 
-    return CVSXEntry(
-        filepath=zip_path,
+    return CVSXFile(
+        filepath=cvsx_path,
         index=cvsx_index,
         annotations=cvsx_annotations,
         metadata=cvsx_metadata,

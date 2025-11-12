@@ -1,13 +1,13 @@
 from ciftools.serialization import loads
-from src.models.cif.read.common import VolumeData3dInfo, VolumeDataTimeAndChannelInfo
-from src.models.cif.read.lattice import (
+
+from src.io.cif.read.common import find_block, find_category, to_item, to_ndarray
+from src.models.read.common import VolumeData3dInfo, VolumeDataTimeAndChannelInfo
+from src.models.read.lattice import (
     LatticeCif,
     SegmentationBlock,
     SegmentationData3d,
     SegmentationDataTable,
 )
-
-from src.io.cif.read.common import find_block, find_category, to_item, to_ndarray
 
 
 def parse_lattice_bcif(bcif_data: bytes) -> LatticeCif:

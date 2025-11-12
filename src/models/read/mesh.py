@@ -2,7 +2,6 @@ from numpy import ndarray
 from pydantic import BaseModel, ConfigDict
 
 from src.models.read.common import (
-    CifFile,
     VolumeData3dInfo,
 )
 
@@ -37,5 +36,5 @@ class MeshBlock(BaseModel):
     mesh_triangle: MeshTriangle
 
 
-class MeshCif(CifFile):
+class MeshCif(BaseModel):
     mesh_block: MeshBlock

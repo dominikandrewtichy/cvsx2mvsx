@@ -17,7 +17,7 @@
         },
     },
     // Themes
-    "workbench.preferredDarkColorTheme": "Dracula At Night",
+    "workbench.preferredDarkColorTheme": "Kimbie Dark",
     "workbench.preferredLightColorTheme": "Solarized Light",
     "peacock.color": "#D76B00",
     "workbench.colorCustomizations": {

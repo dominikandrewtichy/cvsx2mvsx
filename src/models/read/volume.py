@@ -2,7 +2,6 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict
 
 from src.models.read.common import (
-    CifFile,
     VolumeData3dInfo,
     VolumeDataTimeAndChannelInfo,
 )
@@ -19,5 +18,5 @@ class VolumeBlock(BaseModel):
     volume_data_3d: VolumeData3d
 
 
-class VolumeCif(CifFile):
+class VolumeCif(BaseModel):
     volume_block: VolumeBlock

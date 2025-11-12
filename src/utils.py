@@ -1,17 +1,9 @@
-"""Transformation matrix utilities for mesh processing."""
-
 import numpy as np
+
+from src.models.cvsx.cvsx_annotations import CVSXAnnotations, SegmentAnnotationData
 
 
 def translation_matrix(t: np.ndarray | list[float]) -> np.ndarray:
-    """Create a 4x4 translation matrix.
-
-    Args:
-        t: Translation vector [tx, ty, tz]
-
-    Returns:
-        4x4 translation matrix
-    """
     if isinstance(t, list):
         t = np.array(t)
     tx, ty, tz = t
@@ -26,14 +18,6 @@ def translation_matrix(t: np.ndarray | list[float]) -> np.ndarray:
 
 
 def scaling_matrix(s: np.ndarray | list[float]) -> np.ndarray:
-    """Create a 4x4 scaling matrix.
-
-    Args:
-        s: Scale factors [sx, sy, sz]
-
-    Returns:
-        4x4 scaling matrix
-    """
     if isinstance(s, list):
         s = np.array(s)
     sx, sy, sz = s
@@ -52,21 +36,6 @@ def compute_voxel_to_world_transform(
     voxel_size: np.ndarray,
     origin_offset: float = 0.5,
 ) -> np.ndarray:
-    """Compute transformation matrix from voxel space to world space.
-
-    The transformation applies:
-    1. Translation to align origin (negative)
-    2. Scaling by voxel size
-    3. Translation back to origin (positive)
-
-    Args:
-        origin: Origin coordinates in world space [x, y, z]
-        voxel_size: Size of each voxel in world units [sx, sy, sz]
-        origin_offset: Offset to apply to origin in voxel units (default 0.5)
-
-    Returns:
-        4x4 transformation matrix
-    """
     origin_voxel = origin + origin_offset
 
     # Build component matrices
@@ -81,21 +50,10 @@ def compute_voxel_to_world_transform(
 
 
 def matrix_to_flat_list(matrix: np.ndarray) -> list[float]:
-    """Convert a transformation matrix to a flat list for molviewspec.
-
-    Args:
-        matrix: 4x4 transformation matrix
-
-    Returns:
-        Flattened matrix as list (transposed)
-    """
     return matrix.T.flatten().tolist()
 
+
 def smooth_3d_volume(volume: np.ndarray, iterations: int = 1) -> np.ndarray:
-    """
-    Smooth a 3D binary or scalar volume using a Mol*-style 6-neighbor averaging kernel.
-    Each voxel is averaged with its 6 face-connected neighbors.
-    """
     vol = volume.astype(np.float32)
     for _ in range(iterations):
         padded = np.pad(vol, pad_width=1, mode="edge")
@@ -114,3 +72,35 @@ def smooth_3d_volume(volume: np.ndarray, iterations: int = 1) -> np.ndarray:
 
     return vol
 
+
+RgbaType = tuple[float, float, float, float]
+
+
+def get_hex_color(annotation: SegmentAnnotationData | None) -> str | None:
+    if not annotation or not annotation.color:
+        return None
+    r, g, b, _ = annotation.color
+    return "#{:02X}{:02X}{:02X}".format(int(r * 255), int(g * 255), int(b * 255))
+
+
+def rgba_to_opacity(annotation: SegmentAnnotationData | None) -> float | None:
+    if not annotation or not annotation.color:
+        return None
+    return annotation.color[3]
+
+
+def get_volume_color(annotations: CVSXAnnotations, channel_id: str) -> str | None:
+    if not annotations.volume_channels_annotations:
+        return None
+    for annotation in annotations.volume_channels_annotations:
+        if annotation.channel_id == channel_id:
+            rgba = annotation.color[:3]
+            return get_hex_color(rgba)
+
+
+def get_volume_opacity(annotations: CVSXAnnotations, channel_id: str) -> float | None:
+    if not annotations.volume_channels_annotations:
+        return None
+    for annotation in annotations.volume_channels_annotations:
+        if annotation.channel_id == channel_id:
+            return annotation.color[3]

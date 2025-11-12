@@ -43,7 +43,7 @@ class DescriptionData(BaseModel):
     id: Optional[str]
     target_kind: Literal["lattice", "mesh", "primitive", "entry"]
     target_id: Optional[TargetId]
-    name: Optional[str]
+    name: Optional[str | int]
     external_references: Optional[list[ExternalReference]]
     is_hidden: Optional[bool]
     time: Optional[int | list[int | tuple[int, int]]]

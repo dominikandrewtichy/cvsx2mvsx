@@ -6,7 +6,7 @@ from src.models.cvsx.cvsx_metadata import CVSXMetadata
 from src.models.cvsx.cvsx_query import CVSXQuery
 
 
-class CVSXEntry(BaseModel):
+class CVSXFile(BaseModel):
     filepath: str
     index: CVSXIndex
     annotations: CVSXAnnotations

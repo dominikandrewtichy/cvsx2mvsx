@@ -2,7 +2,6 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict
 
 from src.models.read.common import (
-    CifFile,
     VolumeData3dInfo,
     VolumeDataTimeAndChannelInfo,
 )
@@ -26,5 +25,5 @@ class SegmentationBlock(BaseModel):
     segmentation_data_3d: SegmentationData3d
 
 
-class LatticeCif(CifFile):
+class LatticeCif(BaseModel):
     segmentation_block: SegmentationBlock

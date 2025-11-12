@@ -8,6 +8,7 @@ from src.models.mvsx.mvsx_volume import MVSXVolume
 class MVSXSnapshot(BaseModel):
     key: str
     title: str | None = None
+    description: str | None = None
 
 
 class MVSXIndexSnapshot(MVSXSnapshot):
@@ -19,9 +20,8 @@ class MVSXTimeframeSnapshot(MVSXSnapshot):
     segmentations: list[MVSXSegmentation]
 
 
-class MVSXEntry(BaseModel):
+class MVSXFile(BaseModel):
     name: str | None
     details: str | None
     descriptions: list[DescriptionData]
-
-    timeframes: list[MVSXTimeframeSnapshot]
+    snapshots: list[MVSXTimeframeSnapshot]

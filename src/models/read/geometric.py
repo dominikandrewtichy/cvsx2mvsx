@@ -1,66 +1,62 @@
-from enum import Enum
+from typing import Literal, Mapping
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-
-class ShapePrimitiveKind(str, Enum):
-    sphere = "sphere"
-    cylinder = "cylinder"
-    box = "box"
-    ellipsoid = "ellipsoid"
-    pyramid = "pyramid"
+Vector3 = tuple[float, float, float]
 
 
 class ShapePrimitiveBase(BaseModel):
     id: int
-    kind: ShapePrimitiveKind
 
 
 class RotationParameters(BaseModel):
-    axis: tuple[float, float, float]
+    axis: Vector3
     radians: float
 
 
-class Sphere(ShapePrimitiveBase):
-    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.sphere, frozen=True)
-    center: tuple[float, float, float]
+class SphereShape(ShapePrimitiveBase):
+    kind: Literal["sphere"] = "sphere"
+    center: Vector3
     radius: float
 
 
-class Box(ShapePrimitiveBase):
-    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.box, frozen=True)
-    translation: tuple[float, float, float]
-    scaling: tuple[float, float, float]
+class BoxShape(ShapePrimitiveBase):
+    kind: Literal["box"] = "box"
+    translation: Vector3
+    scaling: Vector3
     rotation: RotationParameters
 
 
-class Cylinder(ShapePrimitiveBase):
-    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.cylinder, frozen=True)
-    start: tuple[float, float, float]
-    end: tuple[float, float, float]
+class CylinderShape(ShapePrimitiveBase):
+    kind: Literal["cylinder"] = "cylinder"
+    start: Vector3
+    end: Vector3
     radius_bottom: float
     radius_top: float
 
 
-class Ellipsoid(ShapePrimitiveBase):
-    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.ellipsoid, frozen=True)
-    dir_major: tuple[float, float, float]
-    dir_minor: tuple[float, float, float]
-    center: tuple[float, float, float]
-    radius_scale: tuple[float, float, float]
+class EllipsoidShape(ShapePrimitiveBase):
+    kind: Literal["ellipsoid"] = "ellipsoid"
+    dir_major: Vector3
+    dir_minor: Vector3
+    center: Vector3
+    radius_scale: Vector3
 
 
-class Pyramid(ShapePrimitiveBase):
-    kind: ShapePrimitiveKind = Field(default=ShapePrimitiveKind.pyramid, frozen=True)
-    translation: tuple[float, float, float]
-    scaling: tuple[float, float, float]
+class PyramidShape(ShapePrimitiveBase):
+    kind: Literal["pyramid"] = "pyramid"
+    translation: Vector3
+    scaling: Vector3
     rotation: RotationParameters
 
 
+ShapePrimitive = SphereShape | BoxShape | CylinderShape | EllipsoidShape | PyramidShape
+
+
 class ShapePrimitiveData(BaseModel):
-    shape_primitive_list: list[ShapePrimitiveBase]
+    shape_primitive_list: list[ShapePrimitive]
 
 
 class GeometricSegmentationData(BaseModel):
     segmentation_id: str
-    primitives: dict[int, ShapePrimitiveData]
+    primitives: Mapping[int, ShapePrimitiveData]

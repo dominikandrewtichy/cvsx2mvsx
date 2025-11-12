@@ -1,76 +1,94 @@
-import json
+from zipfile import ZipFile
 
-from molviewspec import GlobalMetadata, States, create_builder
+from molviewspec import create_builder
+from molviewspec.mvsx_converter import mvsj_to_mvsx
 
-from src.convert.convert_all import rgba_to_hex_color
-from src.examples.empiar_10070 import add_mesh_from_bcif
+from src.convert.geometric import get_list_of_all_geometric_segmentations
+from src.convert.lattice import get_list_of_all_lattice_segmentations
+from src.convert.mesh import get_list_of_all_mesh_segmentations
+from src.convert.volume import get_list_of_all_volumes
+from src.io.cvsx_loader import load_cvsx_entry
+from src.models.cvsx.cvsx_file import CVSXFile
+from src.models.mvsx.mvsx_segmentation import (
+    MVSXGeometricSegmentation,
+    MVSXMeshSegmentation,
+)
+from src.models.mvsx.mvsx_volume import MVSXVolume
 
 
-def main():
-    with open("data/cvsx/unzipped/empiar-10070/annotations.json") as f:
-        json_string = f.read()
-        annotations = json.loads(json_string)
-
-    builder = create_builder()
-
-    def add_primitives_from_uri(builder, segment_annotation):
-        rgba_color = segment_annotation["color"]
-        color = rgba_to_hex_color(rgba_color)
-        segment_id = segment_annotation["segment_id"]
-        segment_kind = segment_annotation["segment_kind"]
-        segmentation_id = segment_annotation["segmentation_id"]
-        time = segment_annotation["time"]
-        filename = f"{segment_kind}_{segment_id}_{segmentation_id}_{time}"
-        opacity = 1
-        uri = f"data/cvsx/unzipped/empiar-10070/{filename}.bcif"
-
-        add_mesh_from_bcif(uri, filename, color, opacity)
-
-        builder.primitives_from_uri(
-            uri=f"http://127.0.0.1:8000/data/mvsx/unzipped/empiar-10070/{filename}.mvsj"
-        )
-        return builder
-
-    for segment_annotation in annotations["segment_annotations"]:
-
-    segment_snapshots = []
-
-    for segment_annotation in annotations["segment_annotations"]:
-        segment_id = segment_annotation["segment_id"]
-        segment_kind = segment_annotation["segment_kind"]
-        segmentation_id = segment_annotation["segmentation_id"]
-        time = segment_annotation["time"]
-        filename = f"{segment_kind}_{segment_id}_{segmentation_id}_{time}"
-        builder_copy = builder.model_copy()
-        builder_copy.animation(
-            include_camera=True,
-        ).interpolate(
-            kind="scalar",
-            target_ref=f"{filename}",
-            property="opacity",
-            start=0.5,
-            end=0.5,
-            duration_ms=500,
-        )
-        segment_snapshot = builder_copy.get_snapshot(
-            key=f"{filename}",
-            title=f"{filename}",
-            description=f"# {filename}\n\n[index](#index)",
-            transition_duration_ms=500,
-            linger_duration_ms=0,
-        )
-        segment_snapshots.append(segment_snapshot)
-
-    states = States(
-        metadata=GlobalMetadata(),
-        snapshots=[index_snapshot, *segment_snapshots],
+def convert_cvsx_to_mvsx(cvsx_path: str):
+    cvsx_file: CVSXFile = load_cvsx_entry(cvsx_path)
+    volumes: list[MVSXVolume] = get_list_of_all_volumes(cvsx_file)
+    mesh_segmentations: list[MVSXMeshSegmentation] = get_list_of_all_mesh_segmentations(
+        cvsx_file
+    )
+    lattice_segmentations: list[MVSXMeshSegmentation] = (
+        get_list_of_all_lattice_segmentations(cvsx_file)
+    )
+    geometric_segmentations: list[MVSXGeometricSegmentation] = (
+        get_list_of_all_geometric_segmentations(cvsx_file)
     )
 
-    with open("data/mvsx/unzipped/empiar-10070/index.mvsj", "w") as f:
-        f.write(
-            states.model_dump_json(indent=2, exclude_none=True),
+    print("volumes")
+    for volume in volumes:
+        volume.print_fields()
+        print()
+
+    print("mesh segmentations")
+    for segmentation in mesh_segmentations:
+        segmentation.print_fields()
+        print()
+
+    print("lattice segmentations")
+    for segmentation in lattice_segmentations:
+        segmentation.print_fields()
+        print()
+
+    print("geometric segmentations")
+    for segmentation in geometric_segmentations:
+        segmentation.print_fields()
+        print()
+
+    builder = create_builder()
+    for volume in volumes:
+        with ZipFile(cvsx_path, "r") as zip_ref:
+            zip_ref.extract(volume.source_filepath, "temp/volumes")
+        volume_cif = builder.download(
+            url=volume.destination_filepath,
+        ).parse(format="bcif")
+        volume_data = volume_cif.volume(channel_id=volume.channel_id)
+        volume_representation = volume_data.representation(
+            type="isosurface",
+            relative_isovalue=volume.isovalue,
+            show_faces=True,
+            show_wireframe=False,
         )
+        volume_representation.color(color=volume.color).opacity(opacity=0.2)
+    for segmentation in geometric_segmentations[:5]:
+        builder.primitives(
+            opacity=segmentation.opacity,
+        ).sphere(
+            color=segmentation.color,
+            center=segmentation.center,
+            radius=segmentation.radius,
+        )
+    for segmentation in lattice_segmentations:
+        builder.primitives(
+            opacity=segmentation.opacity,
+        ).mesh(
+            color=segmentation.color,
+            vertices=segmentation.vertices.ravel().tolist(),
+            indices=segmentation.indices.ravel().tolist(),
+            triangle_groups=segmentation.triangle_groups.ravel().tolist(),
+        )
+    state = builder.get_state()
+    with open("temp/mesh.mvsj", "w") as f:
+        f.write(state.model_dump_json(exclude_none=True))
+    mvsj_to_mvsx(
+        input_mvsj_path="temp/mesh.mvsj",
+        output_mvsx_path="temp/mesh.mvsx",
+    )
 
 
 if __name__ == "__main__":
-    main()
+    convert_cvsx_to_mvsx("data/cvsx/zipped/emd-1832.cvsx")

@@ -9,9 +9,9 @@ from molviewspec.mvsx_converter import mvsj_to_mvsx
 from skimage import measure
 
 from src.convert.convert_all import rgb_to_hex
-from src.convert.lattice_segmentation import (
+from src.convert.lattice import (
     bcif_to_lattice_segmentation_cif,
-    get_lattice_segment,
+    get_values_for_lattice_segment,
     read_bcif_file,
 )
 from src.models.read.lattice_segmentation import LatticeSegmentationCIF
@@ -148,7 +148,7 @@ def add_segments(builder: Root, zip_path, segmentation_id):
     for segment_id in set(segment_ids):
         if segment_id == 0:
             continue
-        model = get_lattice_segment(
+        model = get_values_for_lattice_segment(
             lattice_model.model_copy(deep=True),
             segment_id,
             f"{segment_id}",

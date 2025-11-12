@@ -36,7 +36,3 @@ class VolumeData3dInfo(BaseModel):
 class VolumeDataTimeAndChannelInfo(BaseModel):
     time_id: int
     channel_id: int
-
-
-class CifFile(BaseModel):
-    filename: str
