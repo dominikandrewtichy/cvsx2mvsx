@@ -64,14 +64,6 @@ def convert_cvsx_to_mvsx(cvsx_path: str):
             show_wireframe=False,
         )
         volume_representation.color(color=volume.color).opacity(opacity=0.2)
-    for segmentation in geometric_segmentations[:5]:
-        builder.primitives(
-            opacity=segmentation.opacity,
-        ).sphere(
-            color=segmentation.color,
-            center=segmentation.center,
-            radius=segmentation.radius,
-        )
     for segmentation in lattice_segmentations:
         builder.primitives(
             opacity=segmentation.opacity,
@@ -81,6 +73,17 @@ def convert_cvsx_to_mvsx(cvsx_path: str):
             indices=segmentation.indices.ravel().tolist(),
             triangle_groups=segmentation.triangle_groups.ravel().tolist(),
         )
+    for segmentation in geometric_segmentations[:5]:
+        builder.primitives(
+            snapshot_key="",
+            opacity=segmentation.opacity,
+        ).sphere(
+            color=segmentation.color,
+            center=segmentation.center,
+            radius=segmentation.radius,
+            tooltip=segmentation.descriptions,
+        )
+
     state = builder.get_state()
     with open("temp/mesh.mvsj", "w") as f:
         f.write(state.model_dump_json(exclude_none=True))
@@ -91,4 +94,4 @@ def convert_cvsx_to_mvsx(cvsx_path: str):
 
 
 if __name__ == "__main__":
-    convert_cvsx_to_mvsx("data/cvsx/zipped/emd-1832.cvsx")
+    convert_cvsx_to_mvsx("data/cvsx/zipped/custom-tubhiswt.cvsx")
