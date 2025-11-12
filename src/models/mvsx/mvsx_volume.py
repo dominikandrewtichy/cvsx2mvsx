@@ -1,6 +1,6 @@
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class MVSXVolume(BaseModel):
@@ -13,11 +13,22 @@ class MVSXVolume(BaseModel):
 
     channel_id: str
 
-    isovalue: float
+    # TODO: how to set from metadata???
+    isovalue: float = 1
 
-    label: str | None
-    color: str = Field(default="#ffffff", pattern=r"^#[0-9a-fA-F]{6}$")
-    opacity: float = Field(default=1, ge=0, le=1)
+    label: str | None = None
+    color: str | None = Field(default=None, pattern=r"^#[0-9a-fA-F]{6}$")
+    opacity: float | None = Field(default=None, ge=0, le=1)
+
+    @field_validator("color", mode="before")
+    @classmethod
+    def default_color(cls, value):
+        return value or "#000000"
+
+    @field_validator("opacity", mode="before")
+    @classmethod
+    def default_opacity(cls, value):
+        return value or 0.2
 
     def get_fields_str(self) -> str:
         lines = []

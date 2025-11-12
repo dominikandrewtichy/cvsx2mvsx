@@ -5,7 +5,7 @@ from src.models.cvsx.cvsx_annotations import ChannelAnnotation
 from src.models.cvsx.cvsx_file import CVSXFile
 from src.models.mvsx.mvsx_entry import MVSXVolume
 from src.models.read.volume import VolumeCif
-from src.utils import get_hex_color, rgba_to_opacity
+from src.utils import get_hex_color
 
 
 def get_volume_annotations(cvsx_entry: CVSXFile) -> dict[str, ChannelAnnotation]:
@@ -33,14 +33,8 @@ def get_list_of_all_volumes(cvsx_file: CVSXFile) -> list[MVSXVolume]:
         destination_filepath = f"volumes/{source_filepath}"
         annotation = annotations.get(volume_info.channelId)
 
-        if annotation:
-            color = get_hex_color(annotation.color)
-            opacity = rgba_to_opacity(annotation.color)
-            label = annotation.label
-        else:
-            color = "#ffffff"
-            opacity = 1
-            label = None
+        color = get_hex_color(annotation)
+        label = annotation.label if annotation else None
 
         # volume_cif = get_volume_cif(cvsx_file.filepath, source_filepath)
 
@@ -49,10 +43,9 @@ def get_list_of_all_volumes(cvsx_file: CVSXFile) -> list[MVSXVolume]:
             destination_filepath=destination_filepath,
             channel_id=volume_info.channelId,
             timeframe_id=volume_info.timeframeIndex,
-            isovalue=1,
             label=label,
             color=color,
-            opacity=opacity,
+            opacity=None,
         )
 
         mvsx_volumes.append(mvsx_volume)

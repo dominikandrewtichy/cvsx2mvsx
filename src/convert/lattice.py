@@ -123,8 +123,6 @@ def get_mesh_data_for_lattice_segment(
     # center = 182.399995
     # verts -= center
 
-    print(info.origin_0)
-
     vertices = verts
     indices = faces
     triangle_groups = np.zeros(len(faces))

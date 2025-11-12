@@ -85,7 +85,7 @@ def add_volume(builder: Root, volume: MVSXVolume):
         show_wireframe=False,
     )
     volume_representation.color(color=volume.color)
-    volume_representation.opacity(opacity=0.2)
+    volume_representation.opacity(opacity=volume.opacity)
     return builder
 
 
