@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.models.cvsx.cvsx_annotations import CVSXAnnotations, SegmentAnnotationData
+from src.models.cvsx.cvsx_annotations import SegmentAnnotationData
 
 
 def translation_matrix(t: np.ndarray | list[float]) -> np.ndarray:
@@ -73,9 +73,6 @@ def smooth_3d_volume(volume: np.ndarray, iterations: int = 1) -> np.ndarray:
     return vol
 
 
-RgbaType = tuple[float, float, float, float]
-
-
 def get_hex_color(annotation: SegmentAnnotationData | None) -> str | None:
     if not annotation or not annotation.color:
         return None
@@ -87,20 +84,3 @@ def rgba_to_opacity(annotation: SegmentAnnotationData | None) -> float | None:
     if not annotation or not annotation.color:
         return None
     return annotation.color[3]
-
-
-def get_volume_color(annotations: CVSXAnnotations, channel_id: str) -> str | None:
-    if not annotations.volume_channels_annotations:
-        return None
-    for annotation in annotations.volume_channels_annotations:
-        if annotation.channel_id == channel_id:
-            rgba = annotation.color[:3]
-            return get_hex_color(rgba)
-
-
-def get_volume_opacity(annotations: CVSXAnnotations, channel_id: str) -> float | None:
-    if not annotations.volume_channels_annotations:
-        return None
-    for annotation in annotations.volume_channels_annotations:
-        if annotation.channel_id == channel_id:
-            return annotation.color[3]

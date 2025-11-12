@@ -74,7 +74,7 @@ def get_mesh_data_for_lattice_segment(
         constant_values=0.0,
     )
 
-    # Optional smoothing (if you call smooth_3d_volume)
+    # Optional smoothing
     if smooth_iterations and smooth_iterations > 0:
         padded = smooth_3d_volume(padded, iterations=smooth_iterations)
 
@@ -108,23 +108,16 @@ def get_mesh_data_for_lattice_segment(
     faces = faces[:, ::-1]
 
     # Scale vertices to match volume dimensions
-    # Get original sample counts (before padding was added)
-    original_nx = int(info.sample_count_0)
-    original_ny = int(info.sample_count_1)
-    original_nz = int(info.sample_count_2)
 
     # Calculate voxel sizes from spacegroup cell sizes
-    voxel_size_x = info.spacegroup_cell_size_0 / original_nx
-    voxel_size_y = info.spacegroup_cell_size_1 / original_ny
-    voxel_size_z = info.spacegroup_cell_size_2 / original_nz
+    voxel_size_x = info.spacegroup_cell_size_0 / info.sample_count_0
+    voxel_size_y = info.spacegroup_cell_size_1 / info.sample_count_1
+    voxel_size_z = info.spacegroup_cell_size_2 / info.sample_count_2
 
     # Scale vertices (subtract 1 to account for padding offset)
     verts[:, 0] = (verts[:, 0] - 1) * voxel_size_x
     verts[:, 1] = (verts[:, 1] - 1) * voxel_size_y
     verts[:, 2] = (verts[:, 2] - 1) * voxel_size_z
-
-    # Round to reduce precision
-    verts = np.round(verts, 2)
 
     vertices = verts
     indices = faces
@@ -147,7 +140,6 @@ def get_list_of_all_lattice_segmentations(
         source_filepath,
         segmentation_info,
     ) in cvsx_file.index.latticeSegmentations.items():
-        destination_filepath = f"segmentations/{source_filepath}"
         segmentation_id = segmentation_info.segmentationId
         timeframe_id = segmentation_info.timeframeIndex
 
@@ -158,6 +150,8 @@ def get_list_of_all_lattice_segmentations(
         segment_ids = set(segment_ids) - {0}
 
         for segment_id in segment_ids:
+            filepath = f"lattice_{segment_id}_{segmentation_id}_{timeframe_id}.mvsj"
+            destination_filepath = f"segmentations/{filepath}"
             annotation = segmentation_annotations.get((segmentation_id, segment_id))
             descriptions = segmentation_descriptions.get((segmentation_id, segment_id))
 

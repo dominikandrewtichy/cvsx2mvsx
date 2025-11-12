@@ -1,6 +1,10 @@
+from zipfile import ZipFile
+
+from src.io.cif.read.volume import parse_volume_bcif
 from src.models.cvsx.cvsx_annotations import ChannelAnnotation
 from src.models.cvsx.cvsx_file import CVSXFile
 from src.models.mvsx.mvsx_entry import MVSXVolume
+from src.models.read.volume import VolumeCif
 from src.utils import get_hex_color, rgba_to_opacity
 
 
@@ -11,6 +15,14 @@ def get_volume_annotations(cvsx_entry: CVSXFile) -> dict[str, ChannelAnnotation]
     for annotation in cvsx_entry.annotations.volume_channels_annotations:
         annotations_map[annotation.channel_id] = annotation
     return annotations_map
+
+
+def get_volume_cif(cvsx_path: str, inner_path: str) -> VolumeCif:
+    with ZipFile(cvsx_path, "r") as z:
+        with z.open(inner_path) as f:
+            bcif_data = f.read()
+            volume_cif: VolumeCif = parse_volume_bcif(bcif_data)
+            return volume_cif
 
 
 def get_list_of_all_volumes(cvsx_file: CVSXFile) -> list[MVSXVolume]:
@@ -29,6 +41,8 @@ def get_list_of_all_volumes(cvsx_file: CVSXFile) -> list[MVSXVolume]:
             color = "#ffffff"
             opacity = 1
             label = None
+
+        # volume_cif = get_volume_cif(cvsx_file.filepath, source_filepath)
 
         mvsx_volume = MVSXVolume(
             source_filepath=source_filepath,

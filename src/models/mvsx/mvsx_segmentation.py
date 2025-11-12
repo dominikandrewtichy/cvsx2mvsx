@@ -1,4 +1,5 @@
 from typing import Literal
+from uuid import UUID, uuid4
 
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
@@ -10,6 +11,8 @@ SegmentationType = Literal["mesh", "lattice", "primitive"]
 
 
 class MVSXSegmentation(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+
     type: SegmentationType
 
     source_filepath: str
@@ -25,32 +28,34 @@ class MVSXSegmentation(BaseModel):
 
     descriptions: list[DescriptionData]
 
-    def print_fields(self):
-        print("SEGMENTATION")
+    def get_fields_str(self) -> str:
+        lines = []
+        lines.append("SEGMENTATION")
+        lines.append(f"type                 : {self.type}")
+        lines.append(f"source_filepath      : {self.source_filepath}")
+        lines.append(f"destination_filepath : {self.destination_filepath}")
+        lines.append(f"timeframe_id         : {self.timeframe_id}")
+        lines.append(f"segmentation_id      : {self.segmentation_id}")
+        lines.append(f"segment_id           : {self.segment_id}")
 
-        print("type                 :", self.type)
-        print("source_filepath      :", self.source_filepath)
-        print("destination_filepath :", self.destination_filepath)
-        print("timeframe_id         :", self.timeframe_id)
-        print("segmentation_id      :", self.segmentation_id)
-        print("segment_id           :", self.segment_id)
-
-        # Print descriptions
-        print("descriptions         :")
+        # Descriptions
+        lines.append("descriptions         :")
         if not self.descriptions:
-            print("  <empty>")
+            lines.append("  <empty>")
         else:
             for i, desc in enumerate(self.descriptions):
-                print(f"  Description {i + 1}:")
-                print(f"    id                : {desc.id}")
-                print(f"    target_kind       : {desc.target_kind}")
-                print(f"    target_id         : {desc.target_id}")
-                print(f"    name              : {desc.name}")
-                print(f"    external_references: {desc.external_references}")
-                print(f"    is_hidden         : {desc.is_hidden}")
-                print(f"    time              : {desc.time}")
-                print(f"    details           : {desc.details}")
-                print(f"    metadata          : {desc.metadata}")
+                lines.append(f"  Description {i + 1}:")
+                lines.append(f"    id                : {desc.id}")
+                lines.append(f"    target_kind       : {desc.target_kind}")
+                lines.append(f"    target_id         : {desc.target_id}")
+                lines.append(f"    name              : {desc.name}")
+                lines.append(f"    external_references: {desc.external_references}")
+                lines.append(f"    is_hidden         : {desc.is_hidden}")
+                lines.append(f"    time              : {desc.time}")
+                lines.append(f"    details           : {desc.details}")
+                lines.append(f"    metadata          : {desc.metadata}")
+
+        return "\n".join(lines)
 
 
 class MVSXMeshSegmentation(MVSXSegmentation):
