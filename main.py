@@ -37,6 +37,26 @@ def create_index_snapshot(
     return snapshot
 
 
+def create_segmentation_primitives_files(
+    mesh_segmentations: list[MVSXMeshSegmentation],
+    geometric_segmentations: list[MVSXGeometricSegmentation],
+):
+    for mesh in mesh_segmentations:
+        builder = create_builder()
+        add_mesh_segmentation(builder, mesh)
+        state = builder.get_state()
+        if state.root.children != 1:
+            raise ValueError("Expected state to contain exactly one child")
+        primitives_node = state.root.children[0]
+        if primitives_node.kind != "primitives":
+            raise ValueError("Expected primitives node")
+        with open(f"temp/{mesh.destination_filepath}", "w") as f:
+            f.write(mesh)
+
+    for geometric in geometric_segmentations:
+        add_geometric_segmentation(builder, geometric)
+
+
 def get_segmentation_tooltip(segmentation: MVSXSegmentation) -> str:
     tooltip = ""
     segmentation_id = segmentation.segmentation_id
