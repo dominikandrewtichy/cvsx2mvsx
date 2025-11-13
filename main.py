@@ -353,8 +353,8 @@ def create_index_snapshot(
 ) -> Snapshot:
     builder = create_builder()
 
-    # for volume in volumes:
-    #     add_volume(builder, volume)
+    for volume in volumes:
+        add_volume(builder, volume)
     for mesh in mesh_segmentations:
         add_mesh_segmentation(builder, mesh)
     for geometric in geometric_segmentations:
@@ -488,4 +488,4 @@ def convert_cvsx_to_mvsx(cvsx_path: str):
 
 if __name__ == "__main__":
     # TODO: add switch for the lattice segmentation conversion
-    convert_cvsx_to_mvsx("data/cvsx/zipped/geometric_examples/mix.cvsx")
+    convert_cvsx_to_mvsx("data/cvsx/zipped/custom-tubhiswt.cvsx")
