@@ -5,7 +5,7 @@ import numpy as np
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.models.cvsx.cvsx_annotations import DescriptionData
-from src.models.read.geometric import Vector3
+from src.models.read.geometric import ShapePrimitive
 
 SegmentationType = Literal["mesh", "lattice", "primitive"]
 
@@ -66,10 +66,5 @@ class MVSXMeshSegmentation(MVSXSegmentation):
     triangle_groups: np.ndarray[int]
 
 
-class MVSXSphereSegmentation(MVSXSegmentation):
-    kind: Literal["sphere"] = "sphere"
-    center: Vector3
-    radius: float
-
-
-MVSXGeometricSegmentation = MVSXSphereSegmentation
+class MVSXGeometricSegmentation(MVSXSegmentation):
+    shape: ShapePrimitive

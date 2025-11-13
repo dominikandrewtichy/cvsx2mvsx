@@ -7,23 +7,18 @@ from src.convert.common import (
 from src.io.cif.read.geometric import parse_geometric_json
 from src.models.cvsx.cvsx_file import CVSXFile
 from src.models.mvsx.mvsx_entry import MVSXSegmentation
-from src.models.mvsx.mvsx_segmentation import MVSXGeometricSegmentation, MVSXSphereSegmentation
+from src.models.mvsx.mvsx_segmentation import MVSXGeometricSegmentation
 from src.models.read.geometric import (
-    ShapePrimitive,
     ShapePrimitiveData,
 )
 from src.utils import get_hex_color, rgba_to_opacity
 
 
-def get_shape_mesh(cvsx_file: CVSXFile, shape: ShapePrimitive):
-    raise ValueError(f"Unexpected shape kind: {shape.kind}")
-
-
 def get_shape_data(cvsx_path: str, inner_path: str) -> ShapePrimitiveData:
     with ZipFile(cvsx_path, "r") as z:
         with z.open(inner_path) as f:
-            bcif_data = f.read()
-            lattice_cif: ShapePrimitiveData = parse_geometric_json(bcif_data)
+            json_data = f.read()
+            lattice_cif: ShapePrimitiveData = parse_geometric_json(json_data)
             return lattice_cif
 
 
@@ -65,28 +60,18 @@ def get_list_of_all_geometric_segmentations(
                 assert annotation.segmentation_id == segmentation_id
                 assert annotation.time == timeframe_id
 
-            # if shape.kind == "box":
-            #     return get_box_shape_mesh(cvsx_file, shape)
-            # if shape.kind == "cylinder":
-            #     return get_cylinder_shape_mesh(cvsx_file, shape)
-            # if shape.kind == "ellipsoid":
-            #     return get_ellipsoid_shape_mesh(cvsx_file, shape)
-            # if shape.kind == "pyramid":
-            #     return get_pyramid_shape_mesh(cvsx_file, shape)
-            if shape.kind == "sphere":
-                mvsx_segmentation = MVSXSphereSegmentation(
-                    type="primitive",
-                    source_filepath=source_filepath,
-                    destination_filepath=destination_filepath,
-                    timeframe_id=timeframe_id,
-                    segmentation_id=segmentation_id,
-                    segment_id=segment_id,
-                    color=color,
-                    opacity=opacity,
-                    descriptions=descriptions,
-                    center=shape.center,
-                    radius=shape.radius,
-                )
+            mvsx_segmentation = MVSXGeometricSegmentation(
+                type="primitive",
+                source_filepath=source_filepath,
+                destination_filepath=destination_filepath,
+                timeframe_id=timeframe_id,
+                segmentation_id=segmentation_id,
+                segment_id=segment_id,
+                color=color,
+                opacity=opacity,
+                descriptions=descriptions,
+                shape=shape,
+            )
 
             mvsx_segmentations.append(mvsx_segmentation)
 
