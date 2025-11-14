@@ -25,7 +25,7 @@ class SamplingInfo(BaseModel):
     spatial_downsampling_levels: list[DownsamplingLevelInfo]
     boxes: dict[int, SamplingBox]
     time_transformations: list[TimeTransformation] | None = None
-    source_axes_units: dict[str, str]
+    source_axes_units: dict[str, str | None]
     original_axis_order: tuple[int, int, int]
 
 

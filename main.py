@@ -460,10 +460,9 @@ def add_volume(builder: Root, volume: MVSXVolume):
     volume_cif = volume_raw.parse(format="bcif")
     volume_data = volume_cif.volume(channel_id=volume.channel_id)
     volume_representation = volume_data.representation(
-        type="isosurface",
+        type="grid_slice",
+        dimension="z",
         relative_isovalue=volume.isovalue,
-        show_faces=True,
-        show_wireframe=False,
     )
     volume_representation.color(color=volume.color)
     volume_representation.opacity(opacity=volume.opacity)
@@ -522,4 +521,4 @@ def convert_cvsx_to_mvsx(cvsx_path: str):
 
 if __name__ == "__main__":
     # TODO: add switch for the lattice segmentation conversion
-    convert_cvsx_to_mvsx("data/cvsx/zipped/emd-1273.cvsx")
+    convert_cvsx_to_mvsx("data/cvsx/zipped/idr-5025551.cvsx")

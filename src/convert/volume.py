@@ -33,6 +33,7 @@ def get_list_of_all_volumes(cvsx_file: CVSXFile) -> list[MVSXVolume]:
         destination_filepath = f"volumes/{source_filepath}"
         annotation = annotations.get(volume_info.channelId)
 
+        print(volume_info.channelId)
         color = get_hex_color(annotation)
         label = annotation.label if annotation else None
 

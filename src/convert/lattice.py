@@ -167,7 +167,30 @@ def get_list_of_all_lattice_segmentations(
                 assert annotation.segment_kind == "lattice"
                 assert annotation.segment_id == segment_id
                 assert annotation.segmentation_id == segmentation_id
-                assert annotation.time == timeframe_id
+                if isinstance(annotation.time, int):
+                    # simple case
+                    assert annotation.time == timeframe_id
+
+                elif isinstance(annotation.time, list):
+                    if all(isinstance(x, int) for x in annotation.time):
+                        assert timeframe_id in annotation.time
+                    elif all(
+                        isinstance(x, tuple)
+                        and len(x) == 2
+                        and isinstance(x[0], int)
+                        and isinstance(x[1], int)
+                        for x in annotation.time
+                    ):
+                        assert any(
+                            start <= timeframe_id <= end
+                            for start, end in annotation.time
+                        )
+                    else:
+                        raise TypeError(
+                            "annotation.time list contains unsupported types"
+                        )
+                else:
+                    raise TypeError("annotation.time must be int or list")
 
             vertices, indices, triangle_groups = get_mesh_data_for_lattice_segment(
                 lattice_cif,

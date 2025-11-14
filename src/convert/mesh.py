@@ -7,7 +7,7 @@ from src.convert.common import SegmentationId, get_segmentation_annotations
 from src.io.cif.read.mesh import parse_mesh_bcif
 from src.models.cvsx.cvsx_annotations import DescriptionData
 from src.models.cvsx.cvsx_file import CVSXFile
-from src.models.mvsx.mvsx_entry import MVSXBaseSegmentation
+from src.models.mvsx.mvsx_segmentation import MVSXMeshSegmentation
 from src.models.read.mesh import MeshCif
 from src.utils import get_hex_color, rgba_to_opacity
 
@@ -108,7 +108,7 @@ def get_mesh_data(
 
 def get_list_of_all_mesh_segmentations(
     cvsx_file: CVSXFile,
-) -> list[MVSXBaseSegmentation]:
+) -> list[MVSXMeshSegmentation]:
     if not cvsx_file.index.meshSegmentations:
         return []
 
@@ -124,12 +124,8 @@ def get_list_of_all_mesh_segmentations(
             annotation = segmentation_annotations.get((segmentation_id, segment_id))
             descriptions = segmentation_descriptions.get((segmentation_id, segment_id))
 
-            if annotation:
-                color = get_hex_color(annotation.color)
-                opacity = rgba_to_opacity(annotation.color)
-            else:
-                color = "#ffffff"
-                opacity = 1
+            color = get_hex_color(annotation)
+            opacity = rgba_to_opacity(annotation)
 
             # sanity check
             if annotation:
@@ -143,7 +139,7 @@ def get_list_of_all_mesh_segmentations(
                 source_filepath,
             )
 
-            mvsx_segmentation = MVSXBaseSegmentation(
+            mvsx_segmentation = MVSXMeshSegmentation(
                 type="mesh",
                 source_filepath=source_filepath,
                 destination_filepath=destination_filepath,
