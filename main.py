@@ -1,3 +1,4 @@
+from typing import Protocol, TypeVar
 from zipfile import ZipFile
 
 import numpy as np
@@ -12,6 +13,7 @@ from src.convert.volume import get_list_of_all_volumes
 from src.io.cvsx_loader import load_cvsx_entry
 from src.models.cvsx.cvsx_file import CVSXFile
 from src.models.mvsx.mvsx_segmentation import (
+    MVSXBaseSegmentation,
     MVSXGeometricSegmentation,
     MVSXMeshSegmentation,
     MVSXSegmentation,
@@ -346,19 +348,70 @@ def add_geometric_segmentation(builder: Root, segmentation: MVSXGeometricSegment
     return builder
 
 
+# structural typing
+class HasTimeframe(Protocol):
+    timeframe_id: int
+
+
+T = TypeVar("T", bound=HasTimeframe)
+
+
+def get_first_by_timeframe(items: list[T]) -> T | None:
+    if not items:
+        return None
+
+    if not all(hasattr(item, "timeframe_id") for item in items):
+        raise TypeError("All items must have a 'timeframe_id' attribute")
+
+    return min(items, key=lambda item: item.timeframe_id)
+
+
+def get_first_volume(volumes: list[MVSXVolume]) -> list[MVSXVolume]:
+    if not volumes:
+        return []
+
+    min_timeframe = min(v.timeframe_id for v in volumes)
+    earliest_volumes = [v for v in volumes if v.timeframe_id == min_timeframe]
+
+    channel_map = {}
+    for v in earliest_volumes:
+        if v.channel_id not in channel_map:
+            channel_map[v.channel_id] = v
+        else:
+            print(
+                f"Duplicate channel_id '{v.channel_id}' for timeframe: {min_timeframe}"
+            )
+
+    return list(channel_map.values())
+
+
+def get_first_segmentation(
+    segmentations: list[MVSXSegmentation],
+) -> list[MVSXSegmentation]:
+    if not segmentations:
+        return []
+
+    min_timeframe = min(s.timeframe_id for s in segmentations)
+    earliest_segmentations = [
+        s for s in segmentations if s.timeframe_id == min_timeframe
+    ]
+
+    return earliest_segmentations
+
+
 def create_index_snapshot(
     volumes: list[MVSXVolume],
-    mesh_segmentations: list[MVSXMeshSegmentation],
-    geometric_segmentations: list[MVSXGeometricSegmentation],
+    segmentations: list[MVSXSegmentation],
 ) -> Snapshot:
     builder = create_builder()
 
-    for volume in volumes:
+    first_volumes = get_first_volume(volumes)
+    frist_segmentations = get_first_segmentation(segmentations)
+
+    for volume in first_volumes:
         add_volume(builder, volume)
-    for mesh in mesh_segmentations:
-        add_mesh_segmentation(builder, mesh)
-    for geometric in geometric_segmentations:
-        add_geometric_segmentation(builder, geometric)
+    for segmentation in frist_segmentations:
+        add_segmentation(builder, segmentation)
 
     snapshot = builder.get_snapshot()
 
@@ -385,7 +438,7 @@ def create_segmentation_primitives_files(
         add_geometric_segmentation(builder, geometric)
 
 
-def get_segmentation_tooltip(segmentation: MVSXSegmentation) -> str:
+def get_segmentation_tooltip(segmentation: MVSXBaseSegmentation) -> str:
     tooltip = ""
     segmentation_id = segmentation.segmentation_id
     segment_id = segmentation.segment_id
@@ -431,47 +484,28 @@ def add_mesh_segmentation(builder: Root, segmentation: MVSXMeshSegmentation):
     return builder
 
 
+def add_segmentation(builder: Root, segmentation: MVSXSegmentation) -> None:
+    if segmentation.kind in ["mesh", "lattice"]:
+        add_mesh_segmentation(builder, segmentation)
+    if segmentation.kind == "primitive":
+        add_geometric_segmentation(builder, segmentation)
+
+
 def convert_cvsx_to_mvsx(cvsx_path: str):
     cvsx_file: CVSXFile = load_cvsx_entry(cvsx_path)
     volumes: list[MVSXVolume] = get_list_of_all_volumes(cvsx_file)
-    mesh_segmentations: list[MVSXMeshSegmentation] = [
+    segmentations: list[MVSXSegmentation] = [
         *get_list_of_all_mesh_segmentations(cvsx_file),
         *get_list_of_all_lattice_segmentations(cvsx_file),
+        *get_list_of_all_geometric_segmentations(cvsx_file),
     ]
-    geometric_segmentations: list[MVSXGeometricSegmentation] = (
-        get_list_of_all_geometric_segmentations(cvsx_file)
-    )
-
-    # print("volumes")
-    # for volume in volumes:
-    #     print(volume.get_fields_str())
-    #     print()
-
-    # print("mesh segmentations")
-    # for segmentation in mesh_segmentations:
-    #     print(segmentation.get_fields_str())
-    #     print()
-
-    # print("lattice segmentations")
-    # for segmentation in lattice_segmentations:
-    #     print(segmentation.get_fields_str())
-    #     print()
-
-    # print("geometric segmentations")
-    # for segmentation in geometric_segmentations:
-    #     print(segmentation.get_fields_str())
-    #     print()
 
     # copy over data
     for volume in volumes:
         with ZipFile(cvsx_path, "r") as zip_ref:
             zip_ref.extract(volume.source_filepath, "temp/volumes")
 
-    index_snapshot = create_index_snapshot(
-        volumes,
-        mesh_segmentations,
-        geometric_segmentations,
-    )
+    index_snapshot = create_index_snapshot(volumes, segmentations)
     states = States(
         metadata=GlobalMetadata(),
         snapshots=[index_snapshot],
@@ -488,4 +522,4 @@ def convert_cvsx_to_mvsx(cvsx_path: str):
 
 if __name__ == "__main__":
     # TODO: add switch for the lattice segmentation conversion
-    convert_cvsx_to_mvsx("data/cvsx/zipped/custom-tubhiswt.cvsx")
+    convert_cvsx_to_mvsx("data/cvsx/zipped/emd-1273.cvsx")

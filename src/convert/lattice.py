@@ -7,8 +7,8 @@ from src.convert.common import SegmentationId, get_segmentation_annotations
 from src.io.cif.read.lattice import parse_lattice_bcif
 from src.models.cvsx.cvsx_annotations import DescriptionData
 from src.models.cvsx.cvsx_file import CVSXFile
-from src.models.mvsx.mvsx_entry import MVSXSegmentation
-from src.models.mvsx.mvsx_segmentation import MVSXMeshSegmentation
+from src.models.mvsx.mvsx_entry import MVSXBaseSegmentation
+from src.models.mvsx.mvsx_segmentation import MVSXLatticeSegmentation
 from src.models.read.lattice import LatticeCif
 from src.utils import get_hex_color, rgba_to_opacity, smooth_3d_volume
 
@@ -132,7 +132,7 @@ def get_mesh_data_for_lattice_segment(
 
 def get_list_of_all_lattice_segmentations(
     cvsx_file: CVSXFile,
-) -> list[MVSXSegmentation]:
+) -> list[MVSXBaseSegmentation]:
     if not cvsx_file.index.latticeSegmentations:
         return []
 
@@ -174,8 +174,8 @@ def get_list_of_all_lattice_segmentations(
                 segment_id,
             )
 
-            mvsx_segmentation = MVSXMeshSegmentation(
-                type="lattice",
+            mvsx_segmentation = MVSXLatticeSegmentation(
+                kind="lattice",
                 source_filepath=source_filepath,
                 destination_filepath=destination_filepath,
                 timeframe_id=timeframe_id,

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 from src.models.cvsx.cvsx_annotations import DescriptionData
-from src.models.mvsx.mvsx_segmentation import MVSXSegmentation
+from src.models.mvsx.mvsx_segmentation import MVSXBaseSegmentation
 from src.models.mvsx.mvsx_volume import MVSXVolume
 
 
@@ -17,7 +17,7 @@ class MVSXIndexSnapshot(MVSXSnapshot):
 
 class MVSXTimeframeSnapshot(MVSXSnapshot):
     volumes: list[MVSXVolume]
-    segmentations: list[MVSXSegmentation]
+    segmentations: list[MVSXBaseSegmentation]
 
 
 class MVSXFile(BaseModel):

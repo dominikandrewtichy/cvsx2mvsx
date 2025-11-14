@@ -1,6 +1,6 @@
-import numpy as np
+from typing import Optional, Protocol, TypeVar
 
-from src.models.cvsx.cvsx_annotations import SegmentAnnotationData
+import numpy as np
 
 
 def translation_matrix(t: np.ndarray | list[float]) -> np.ndarray:
@@ -73,14 +73,21 @@ def smooth_3d_volume(volume: np.ndarray, iterations: int = 1) -> np.ndarray:
     return vol
 
 
-def get_hex_color(annotation: SegmentAnnotationData | None) -> str | None:
+class HasColor(Protocol):
+    color: Optional[tuple[float, float, float, float]]
+
+
+T = TypeVar("T", bound=HasColor)
+
+
+def get_hex_color(annotation: T | None) -> str | None:
     if not annotation or not annotation.color:
         return None
     r, g, b, _ = annotation.color
     return "#{:02X}{:02X}{:02X}".format(int(r * 255), int(g * 255), int(b * 255))
 
 
-def rgba_to_opacity(annotation: SegmentAnnotationData | None) -> float | None:
+def rgba_to_opacity(annotation: T | None) -> float | None:
     if not annotation or not annotation.color:
         return None
     return annotation.color[3]

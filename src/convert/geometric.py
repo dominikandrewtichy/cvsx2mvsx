@@ -6,7 +6,7 @@ from src.convert.common import (
 )
 from src.io.cif.read.geometric import parse_geometric_json
 from src.models.cvsx.cvsx_file import CVSXFile
-from src.models.mvsx.mvsx_entry import MVSXSegmentation
+from src.models.mvsx.mvsx_entry import MVSXBaseSegmentation
 from src.models.mvsx.mvsx_segmentation import MVSXGeometricSegmentation
 from src.models.read.geometric import (
     ShapePrimitiveData,
@@ -24,7 +24,7 @@ def get_shape_data(cvsx_path: str, inner_path: str) -> ShapePrimitiveData:
 
 def get_list_of_all_geometric_segmentations(
     cvsx_file: CVSXFile,
-) -> list[MVSXSegmentation]:
+) -> list[MVSXBaseSegmentation]:
     if not cvsx_file.index.geometricSegmentations:
         return []
 
@@ -61,7 +61,7 @@ def get_list_of_all_geometric_segmentations(
                 assert annotation.time == timeframe_id
 
             mvsx_segmentation = MVSXGeometricSegmentation(
-                type="primitive",
+                kind="primitive",
                 source_filepath=source_filepath,
                 destination_filepath=destination_filepath,
                 timeframe_id=timeframe_id,

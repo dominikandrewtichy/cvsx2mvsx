@@ -29,16 +29,3 @@ class MVSXVolume(BaseModel):
     @classmethod
     def default_opacity(cls, value):
         return value or 0.2
-
-    def get_fields_str(self) -> str:
-        lines = []
-        lines.append("VOLUME")
-        lines.append(f"source_filepath      : {self.source_filepath}")
-        lines.append(f"destination_filepath : {self.destination_filepath}")
-        lines.append(f"timeframe_id         : {self.timeframe_id}")
-        lines.append(f"channel_id           : {self.channel_id}")
-        lines.append(f"isovalue             : {self.isovalue}")
-        lines.append(f"label                : {self.label}")
-        lines.append(f"color                : {self.color}")
-        lines.append(f"opacity              : {self.opacity}")
-        return "\n".join(lines)

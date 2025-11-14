@@ -9,7 +9,7 @@ from src.utils import get_hex_color
 
 
 def get_volume_annotations(cvsx_entry: CVSXFile) -> dict[str, ChannelAnnotation]:
-    if cvsx_entry.annotations.volume_channels_annotations:
+    if not cvsx_entry.annotations.volume_channels_annotations:
         return {}
     annotations_map = {}
     for annotation in cvsx_entry.annotations.volume_channels_annotations:

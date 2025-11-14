@@ -7,7 +7,7 @@ from src.models.cvsx.cvsx_common import EntryId
 
 class ChannelAnnotation(BaseModel):
     channel_id: str
-    color: tuple[float, float, float, float]
+    color: Optional[tuple[float, float, float, float]]
     label: Optional[str]
 
 
